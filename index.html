@@ -9,15 +9,301 @@
 <body><header><div class="brand"><img class="brand-logo" data-logo alt="SD Hotel logo"><div><h1>SD HOTEL PMS</h1><small>5th Floor, SD Tiangge Mall, along Don Hilario Avenue, Manila East, Barangay San Juan, Taytay, Rizal</small></div></div><div id="clock"></div></header>
 <div class="layout"><nav id="nav"><button class="active" data-page="dashboard">◉ Dashboard</button><button data-page="booking">＋ New Booking</button><button data-page="bookings">▤ Bookings</button><button data-page="calendar">▦ Reservation Calendar</button><button data-page="rooms">▦ Room Status</button><button data-page="housekeeping">✓ Housekeeping</button><button data-page="inventory">▤ Inventory</button><button data-page="expenses">₱ Expenses</button><button data-page="revenueReports">⌁ Revenue Report</button><button data-page="reports">▤ Optional Reports</button><button data-page="staffAccounts">♙ Staff Accounts</button><button data-page="rates">₱ Room Rates</button><button data-page="payments">₱ Payments</button><button data-page="receipts">▧ Guest Receipt</button></nav><main>
 <section id="dashboard" class="page active"><div class="panel welcome"><img class="welcome-logo" data-logo alt="SD Hotel logo"><div><h2 style="margin-bottom:5px">Welcome to SD Hotel PMS</h2><div>Manage reservations, rooms, payments, keycards, and reports in one place.</div></div></div><h2>Dashboard</h2><div class="cards"><div class="card">Total Revenue Today<div class="metric" id="todayRevenue">₱0</div></div><div class="card">Monthly Revenue<div class="metric" id="monthlyRevenue">₱0</div></div><div class="card">Number of Guests<div class="metric" id="guestCount">0</div></div><div class="card">Occupancy Rate<div class="metric" id="occupancyMetric">0%</div></div><div class="card">Active Bookings<div class="metric" id="activeCount">0</div></div><div class="card">Available Rooms<div class="metric" id="availableCount">0</div></div><div class="card">Remaining Guest Balances<div class="metric" id="balanceTotal">₱0</div></div><div class="card">Monthly Expenses<div class="metric" id="monthlyExpenses">₱0</div></div></div><div class="panel sales-chart"><b>Hotel Sales — Last 7 Days</b><canvas id="salesCanvas"></canvas><div class="chart-note">Based on payments recorded in the PMS.</div></div><div class="grid2"><div class="panel"><b>Room Occupancy</b><div class="donut" id="occupancyDonut" style="--p:0%" data-label="0%"></div></div><div class="panel"><b>Booking Status</b><table><tbody id="statusSummary"></tbody></table></div></div></section>
-<section id="booking" class="page"><h2>New Booking</h2><div class="panel"><form id="bookingForm"><div class="field"><label>Guest Name *</label><input id="guest" required></div><div class="field"><label>Contact Number</label><input id="contact"></div><div class="field"><label>Booking Source</label><select id="source"><option>Walk-in</option><option>Agoda</option><option>Booking.com</option><option>Direct Reservation</option></select></div><div class="field"><label>OTA Confirmation Number</label><input id="otaRef" placeholder="For Agoda / Booking.com"></div><div class="field"><label>Room</label><select id="room"></select></div><div class="field"><label>Stay Type</label><select id="stay"><option>3 Hours</option><option>5 Hours</option><option>Per Night</option><option>Additional Hour</option></select></div><div class="field" id="nightsField" style="display:none"><label>Number of Nights</label><input id="nights" type="number" min="1" value="1"></div><div class="field"><label>Check-in</label><input type="datetime-local" id="checkin" required></div><div class="field"><label>Expected Check-out</label><input type="datetime-local" id="checkoutDate" readonly></div><div class="field"><label>Room Rate Override (Per Night/Stay)</label><input id="rateOverride" type="number" min="0" placeholder="Leave blank for standard rate"></div><div class="field"><label>Payment Method</label><select id="method"><option>Cash</option><option>GCash</option><option>Bank Transfer</option><option>Agoda Collect</option><option>Booking.com Collect</option><option>Unpaid</option></select></div><div class="field"><label>Payment Reference / Details</label><input id="paymentRef" placeholder="GCash ref., bank ref., or notes"></div><div class="field"><label>Downpayment / Payment Amount</label><input id="paid" type="number" min="0" value="0" placeholder="Type exact amount received"></div><div class="field"><label>Keycard Number</label><input id="keycardNo" placeholder="e.g. KC-101"></div><div class="field"><label>Keycard Security</label><select id="keycardSecurity"><option value="Deposit">₱1,000 Refundable Deposit</option><option value="Valid ID">Valid ID</option><option value="None">None</option></select></div><div class="field"><label>Keycard Deposit Received</label><input id="keycardDeposit" type="number" min="0" value="1000"></div><div class="field"><label>Bath Towel — ₱100 each</label><input id="bathTowelQty" type="number" min="0" value="0"></div><div class="field"><label>Bedsheet — ₱100 each</label><input id="bedsheetQty" type="number" min="0" value="0"></div><div class="field"><label>Pillow — ₱50 each</label><input id="pillowQty" type="number" min="0" value="0"></div><div class="field"><label>Other Charges Description</label><input id="chargeDesc" placeholder="Optional additional charge"></div><div class="field"><label>Other Charges Amount</label><input id="other" type="number" min="0" value="0"></div><div class="full summary" id="priceSummary">Room Rate: ₱0 • Additional Items: ₱0 • Total: ₱0 • Balance: ₱0 • Pending</div><div class="full"><button class="primary">Save Booking</button></div></form></div></section>
-<section id="bookings" class="page"><div class="print-heading"><img data-logo alt="SD Hotel logo"><div><h2 style="margin:0">SD Hotel Booking Report</h2><div>5th Floor, SD Tiangge Mall, along Don Hilario Avenue, Manila East, Barangay San Juan, Taytay, Rizal</div></div></div><h2>Bookings</h2><div class="actions"><button class="primary" onclick="exportCSV()">Export CSV</button><button class="primary" onclick="window.print()">Print Report</button></div><div class="panel" style="margin-bottom:16px"><h3 style="margin:0 0 10px">Automated Booking Buttons Guide</h3><p><b>Add Payment</b> — Records another payment and keeps the guest reserved.</p><p><b>Pay Balance &amp; Check In</b> — Collects the remaining balance, marks the payment fully paid, checks in the guest, and marks the room occupied.</p><p><b>Check In</b> — Appears when the reservation is fully paid. If no room is assigned, the PMS asks you to choose an available room before check-in.</p></div><div class="panel" style="overflow:auto"><table><thead><tr><th>PMS Reference</th><th>Source</th><th>OTA Reference</th><th>Guest</th><th>Room</th><th>Keycard</th><th>Security</th><th>Return Status</th><th>Stay</th><th>Additional Items</th><th>Check-in</th><th>Expected Check-out</th><th>Total</th><th>Paid</th><th>Balance</th><th>Reservation Payment Type</th><th>Payment Status</th><th>Booking Status</th><th>Action</th></tr></thead><tbody id="bookingRows"></tbody></table></div></section>
+<section id="booking" class="page">
+<h2>New Booking</h2>
+<div class="panel">
+<form id="bookingForm">
+<div class="field">
+<label>Guest Name *</label>
+<input id="guest" required>
+</div>
+<div class="field">
+<label>Contact Number</label>
+<input id="contact">
+</div>
+<div class="field">
+<label>Booking Source</label>
+<select id="source">
+<option>Walk-in</option>
+<option>Agoda</option>
+<option>Booking.com</option>
+<option>Direct Reservation</option>
+</select>
+</div>
+<div class="field">
+<label>OTA Confirmation Number</label>
+<input id="otaRef" placeholder="For Agoda / Booking.com">
+</div>
+<div class="field">
+<label>Room</label>
+<select id="room">
+</select>
+</div>
+<div class="field">
+<label>Stay Type</label>
+<select id="stay">
+<option>3 Hours</option>
+<option>5 Hours</option>
+<option>Per Night</option>
+<option>Additional Hour</option>
+</select>
+</div>
+<div class="field" id="nightsField" style="display:none">
+<label>Number of Nights</label>
+<input id="nights" type="number" min="1" value="1">
+</div>
+<div class="field">
+<label>Check-in</label>
+<input type="datetime-local" id="checkin" required>
+</div>
+<div class="field">
+<label>Expected Check-out</label>
+<input type="datetime-local" id="checkoutDate" readonly>
+</div>
+<div class="field">
+<label>Room Rate Override (Per Night/Stay)</label>
+<input id="rateOverride" type="number" min="0" placeholder="Leave blank for standard rate">
+</div>
+<div class="field">
+<label>Payment Method</label>
+<select id="method">
+<option>Cash</option>
+<option>GCash</option>
+<option>Bank Transfer</option>
+<option>Agoda Collect</option>
+<option>Booking.com Collect</option>
+<option>Unpaid</option>
+</select>
+</div>
+<div class="field">
+<label>Payment Reference / Details</label>
+<input id="paymentRef" placeholder="GCash ref., bank ref., or notes">
+</div>
+<div class="field">
+<label>Downpayment / Payment Amount</label>
+<input id="paid" type="number" min="0" value="0" placeholder="Type exact amount received">
+</div>
+<div class="field">
+<label>Keycard Number</label>
+<input id="keycardNo" placeholder="e.g. KC-101">
+</div>
+<div class="field">
+<label>Keycard Security</label>
+<select id="keycardSecurity">
+<option value="Deposit">₱1,000 Refundable Deposit</option>
+<option value="Valid ID">Valid ID</option>
+<option value="None">None</option>
+</select>
+</div>
+<div class="field">
+<label>Keycard Deposit Received</label>
+<input id="keycardDeposit" type="number" min="0" value="1000">
+</div>
+<div class="field">
+<label>Bath Towel — ₱100 each</label>
+<input id="bathTowelQty" type="number" min="0" value="0">
+</div>
+<div class="field">
+<label>Bedsheet — ₱100 each</label>
+<input id="bedsheetQty" type="number" min="0" value="0">
+</div>
+<div class="field">
+<label>Pillow — ₱50 each</label>
+<input id="pillowQty" type="number" min="0" value="0">
+</div>
+<div class="field">
+<label>Other Charges Description</label>
+<input id="chargeDesc" placeholder="Optional additional charge">
+</div>
+<div class="field">
+<label>Other Charges Amount</label>
+<input id="other" type="number" min="0" value="0">
+</div>
+<div class="field">
+<label>VAT Treatment</label>
+<select id="vatTreatment"><option value="VAT">Add 12% VAT</option><option value="Exempt">VAT Exempt / No VAT</option></select>
+<small>VAT is calculated automatically from the room charge.</small>
+</div>
+<div class="full summary" id="priceSummary">Room Rate: ₱0 • VAT (12%): ₱0 • Additional Items: ₱0 • Total: ₱0 • Balance: ₱0 • Pending</div>
+<div class="full">
+<button class="primary">Save Booking</button>
+</div>
+</form>
+</div>
+</section>
+<section id="bookings" class="page">
+<div class="print-heading">
+<img data-logo alt="SD Hotel logo">
+<div>
+<h2 style="margin:0">SD Hotel Booking Report</h2>
+<div>5th Floor, SD Tiangge Mall, along Don Hilario Avenue, Manila East, Barangay San Juan, Taytay, Rizal</div>
+</div>
+</div>
+<h2>Bookings</h2>
+<div class="actions">
+<button class="primary" onclick="exportCSV()">Export CSV</button>
+<button class="primary" onclick="window.print()">Print Report</button>
+</div>
+<div class="panel" style="margin-bottom:16px">
+<h3 style="margin:0 0 10px">Automated Booking Buttons Guide</h3>
+<p>
+<b>Add Payment</b> — Records another payment and keeps the guest reserved.</p>
+<p>
+<b>Pay Balance &amp; Check In</b> — Collects the remaining balance, marks the payment fully paid, checks in the guest, and marks the room occupied.</p>
+<p>
+<b>Check In</b> — Appears when the reservation is fully paid. If no room is assigned, the PMS asks you to choose an available room before check-in.</p>
+</div>
+<div class="panel" style="overflow:auto">
+<table>
+<thead>
+<tr>
+<th>PMS Reference</th>
+<th>Source</th>
+<th>OTA Reference</th>
+<th>Guest</th>
+<th>Room</th>
+<th>Keycard</th>
+<th>Security</th>
+<th>Return Status</th>
+<th>Stay</th>
+<th>Additional Items</th>
+<th>Check-in</th>
+<th>Expected Check-out</th>
+<th>VAT</th>
+<th>Total</th>
+<th>Paid</th>
+<th>Balance</th>
+<th>Reservation Payment Type</th>
+<th>Payment Status</th>
+<th>Booking Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="bookingRows">
+</tbody>
+</table>
+</div>
+</section>
 <section id="calendar" class="page"><div class="actions" style="justify-content:space-between;align-items:center"><button class="primary" onclick="changeCalendarMonth(-1)">← Previous</button><h2 id="calendarTitle" style="margin:0"></h2><button class="primary" onclick="changeCalendarMonth(1)">Next →</button></div><div class="calendar-grid" id="calendarGrid"></div><p><span class="badge">Reserved</span> Future reservation &nbsp; <span class="badge Occupied">Checked-in</span> Guest currently checked in.</p></section>
 <section id="rooms" class="page"><h2>Room Status</h2><p>Click a room to change: Available → Occupied → Cleaning.</p><div class="rooms" id="roomCards"></div></section>
 <section id="housekeeping" class="page"><h2>Housekeeping Room Updates</h2><div class="cards" id="housekeepingSummary"></div><div class="actions"><button class="primary" onclick="setHousekeepingFilter('All')">All Rooms</button><button class="primary" onclick="setHousekeepingFilter('Dirty')">Dirty</button><button class="primary" onclick="setHousekeepingFilter('Make Up Room')">Make Up Room</button><button class="primary" onclick="setHousekeepingFilter('Clean')">Clean</button></div><div class="rooms" id="housekeepingCards"></div><div class="panel" style="margin-top:18px"><h3 style="margin-top:0">Complete Room Cleaning</h3><form id="cleaningForm"><div class="field"><label>Housekeeping Staff</label><input id="cleanerName" required></div><div class="field"><label>Room</label><select id="cleaningRoom" required></select></div><div class="field"><label>Cleaning Type</label><select id="cleaningType"><option>Standard Room Cleaning</option><option>Make Up Room</option></select></div><div class="field full"><label>Inventory Items Used — enter quantity</label><div id="cleaningSupplyQuantities" class="form-grid"></div><small>Every quantity entered here will be deducted automatically from Inventory.</small></div><div class="field"><label>Notes</label><input id="cleaningNotes" placeholder="Damages, missing items, maintenance needed, etc."></div><div class="field" style="align-self:end"><button class="primary">Complete and Mark Clean</button></div></form></div><div class="panel" style="margin-top:18px"><h3>Housekeeping Inventory</h3><div class="cards" id="housekeepingInventoryCards"></div><p>Stock Out is automatic when items are used. Use the <b>Inventory</b> page to record new deliveries as Stock In.</p></div><div class="panel" style="margin-top:18px;overflow:auto"><h3>Room Cleaning History</h3><table><thead><tr><th>Date and Time</th><th>Room</th><th>Staff</th><th>Cleaning Type</th><th>Supplies Used</th><th>Notes</th></tr></thead><tbody id="cleaningRows"></tbody></table></div></section>
 <section id="inventory" class="page"><h2>Hotel Stocks and Linen/Towel Inventory</h2><div class="card" style="margin-bottom:18px">Overall Consumption Cost<div class="metric" id="allInventoryConsumption">₱0</div><small>All recorded Stock Out</small></div><h3>Linen and Towel Inventory</h3><div class="cards" id="linenInventoryCards"></div><h3 style="margin-top:22px">Hotel Stocks</h3><div class="cards" id="hotelStockCards"></div><div class="panel" style="margin-top:18px;overflow:auto"><h3 style="margin-top:0">Consumption Today</h3><p>Automatically shows all inventory consumed during the current day.</p><table><thead><tr><th>Item</th><th>Quantity Consumed Today</th><th>Unit Price</th><th>Consumption Cost Today</th></tr></thead><tbody id="dailyConsumptionRows"></tbody><tfoot><tr><th colspan="3">Total Consumption Today</th><th id="dailyConsumptionTotal">₱0</th></tr></tfoot></table></div><div class="panel" style="margin-top:18px;overflow:auto"><h3 style="margin-top:0">Automatic Total Consumption — All Inventory</h3><p>Includes every automatic and manual Stock Out from bookings and housekeeping.</p><table><thead><tr><th>Item</th><th>Total Quantity Consumed</th><th>Unit Price</th><th>Total Consumption Cost</th></tr></thead><tbody id="inventoryConsumptionRows"></tbody><tfoot><tr><th colspan="3">Overall Consumption Cost</th><th id="inventoryConsumptionGrandTotal">₱0</th></tr></tfoot></table></div><div class="panel" style="margin-top:18px"><h3 style="margin-top:0">Record Stock Movement</h3><form id="inventoryForm"><div class="field"><label>Item</label><select id="inventoryItem"><option>Bath Towel</option><option>Linen</option><option>Bedsheet</option></select></div><div class="field"><label>Movement</label><select id="inventoryMovement"><option value="IN">Stock In</option><option value="OUT">Stock Out</option></select></div><div class="field"><label>Quantity</label><input id="inventoryQty" type="number" min="1" required></div><div class="field"><label>Unit Price</label><input id="inventoryUnitPrice" type="number" min="0" step="0.01" value="0" required></div><div class="field"><label>Reference / Notes</label><input id="inventoryNote" placeholder="Delivery, room use, damaged, laundry, etc."></div><div class="field" style="align-self:end"><button class="primary">Save Inventory</button></div></form></div><div class="panel" style="margin-top:18px;overflow:auto"><table><thead><tr><th>Date</th><th>Item</th><th>Movement</th><th>Quantity</th><th>Unit Price</th><th>Total Cost</th><th>Balance</th><th>Reference / Notes</th></tr></thead><tbody id="inventoryRows"></tbody></table></div></section>
 <section id="expenses" class="page"><h2>Hotel Operating Expenses</h2><div class="cards"><div class="card">Expenses Today<div class="metric" id="expenseToday">₱0</div></div><div class="card">Expenses This Month<div class="metric" id="expenseMonth">₱0</div></div><div class="card">Net Income This Month<div class="metric" id="netIncomeMonth">₱0</div></div></div><div class="panel" style="margin-top:18px"><h3 style="margin-top:0">Input Expense</h3><form id="expenseForm"><div class="field"><label>Date</label><input id="expenseDate" type="date" required></div><div class="field"><label>Category</label><select id="expenseCategory"><option>Utilities</option><option>Supplies</option><option>Salary</option><option>Maintenance</option><option>Laundry</option><option>Food and Beverage</option><option>Marketing</option><option>Other</option></select></div><div class="field"><label>Amount</label><input id="expenseAmount" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Description / Reference</label><input id="expenseDescription" required></div><div class="field" style="align-self:end"><button class="primary">Save Expense</button></div></form></div><div class="panel" style="margin-top:18px;overflow:auto"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Action</th></tr></thead><tbody id="expenseRows"></tbody></table></div></section>
 <section id="revenueReports" class="page"><h2>Revenue Report</h2><div class="cards"><div class="card">Daily Income<div class="metric" id="reportDaily">₱0</div></div><div class="card">Weekly Income<div class="metric" id="reportWeekly">₱0</div></div><div class="card">Monthly Income<div class="metric" id="reportMonthly">₱0</div></div></div><div class="panel sales-chart"><b>Daily Revenue — Last 30 Days</b><canvas id="revenueCanvas"></canvas></div><div class="panel" style="margin-top:18px;overflow:auto"><table><thead><tr><th>Period</th><th>Gross Revenue</th><th>Expenses</th><th>Net Revenue</th></tr></thead><tbody id="revenueSummaryRows"></tbody></table></div></section>
-<section id="reports" class="page"><h2>Hotel Reports</h2><div class="field" style="max-width:240px"><label>Report Period</label><select id="reportPeriod" onchange="renderOptionalReports()"><option value="today">Today</option><option value="week">This Week</option><option value="month" selected>This Month</option><option value="all">All Records</option></select></div><div class="cards" id="optionalReportCards" style="margin-top:18px"></div><div class="panel" style="margin-top:18px;overflow:auto"><h3>Guest Report</h3><table><thead><tr><th>Guest</th><th>Room</th><th>Status</th><th>Total</th><th>Downpayment/Paid</th><th>Remaining Balance</th><th>Check-in</th><th>Check-out</th></tr></thead><tbody id="optionalGuestRows"></tbody></table></div><div class="grid2"><div class="panel" style="overflow:auto"><h3>Booking Source Report</h3><table><thead><tr><th>Source</th><th>Bookings</th><th>Revenue</th></tr></thead><tbody id="sourceReportRows"></tbody></table></div><div class="panel" style="overflow:auto"><h3>Cancellation Report</h3><table><thead><tr><th>Guest</th><th>Room</th><th>Source</th><th>Check-in</th><th>Paid</th></tr></thead><tbody id="cancellationRows"></tbody></table></div></div><div class="panel" style="margin-top:18px;overflow:auto"><h3>Payment Report</h3><table><thead><tr><th>Date</th><th>Guest</th><th>Booking Reference</th><th>Method</th><th>Amount</th><th>Remaining Balance</th></tr></thead><tbody id="reportPaymentRows"></tbody></table></div><div class="panel" style="margin-top:18px;overflow:auto"><div class="actions" style="justify-content:space-between;align-items:center"><h3 style="margin:0">Daily Guest Log</h3><button class="primary" onclick="window.print()">Print Daily Guest Log</button></div><p>Matches the hotel guest registration sheet. The Signature column is left blank for signing after printing.</p><div class="cards" id="dailyGuestLogTotals" style="margin:12px 0 18px"></div><table><thead><tr><th>Date</th><th>Room #</th><th>Guest Name</th><th>Time In</th><th>Check-out</th><th>Hours/Nights</th><th>Amount</th><th>Cash</th><th>GCash</th><th>Ref # / OR Receipt</th><th>Keycard</th><th>ID</th><th>Deposit</th><th>Signature</th></tr></thead><tbody id="dailyGuestLogRows"></tbody></table></div></section>
+<section id="reports" class="page">
+<h2>Hotel Reports</h2>
+<div class="field" style="max-width:240px">
+<label>Report Period</label>
+<select id="reportPeriod" onchange="renderOptionalReports()">
+<option value="today">Today</option>
+<option value="week">This Week</option>
+<option value="month" selected>This Month</option>
+<option value="all">All Records</option>
+</select>
+</div>
+<div class="cards" id="optionalReportCards" style="margin-top:18px">
+</div>
+<div class="panel" style="margin-top:18px;overflow:auto">
+<h3>Guest Report</h3>
+<table>
+<thead>
+<tr>
+<th>Guest</th>
+<th>Room</th>
+<th>Status</th>
+<th>VAT</th>
+<th>Total</th>
+<th>Downpayment/Paid</th>
+<th>Remaining Balance</th>
+<th>Check-in</th>
+<th>Check-out</th>
+</tr>
+</thead>
+<tbody id="optionalGuestRows">
+</tbody>
+</table>
+</div>
+<div class="grid2">
+<div class="panel" style="overflow:auto">
+<h3>Booking Source Report</h3>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Bookings</th>
+<th>Revenue</th>
+</tr>
+</thead>
+<tbody id="sourceReportRows">
+</tbody>
+</table>
+</div>
+<div class="panel" style="overflow:auto">
+<h3>Cancellation Report</h3>
+<table>
+<thead>
+<tr>
+<th>Guest</th>
+<th>Room</th>
+<th>Source</th>
+<th>Check-in</th>
+<th>Paid</th>
+</tr>
+</thead>
+<tbody id="cancellationRows">
+</tbody>
+</table>
+</div>
+</div>
+<div class="panel" style="margin-top:18px;overflow:auto">
+<h3>Payment Report</h3>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Guest</th>
+<th>Booking Reference</th>
+<th>Method</th>
+<th>Amount</th>
+<th>Remaining Balance</th>
+</tr>
+</thead>
+<tbody id="reportPaymentRows">
+</tbody>
+</table>
+</div>
+<div class="panel" style="margin-top:18px;overflow:auto">
+<div class="actions" style="justify-content:space-between;align-items:center">
+<h3 style="margin:0">Daily Guest Log</h3>
+<button class="primary" onclick="window.print()">Print Daily Guest Log</button>
+</div>
+<p>Matches the hotel guest registration sheet. The Signature column is left blank for signing after printing.</p>
+<div class="cards" id="dailyGuestLogTotals" style="margin:12px 0 18px">
+</div>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Room #</th>
+<th>Guest Name</th>
+<th>Time In</th>
+<th>Check-out</th>
+<th>Hours/Nights</th>
+<th>Amount</th>
+<th>Cash</th>
+<th>GCash</th>
+<th>Ref # / OR Receipt</th>
+<th>Keycard</th>
+<th>ID</th>
+<th>Deposit</th>
+<th>Signature</th>
+</tr>
+</thead>
+<tbody id="dailyGuestLogRows">
+</tbody>
+</table>
+</div>
+</section>
 <section id="staffAccounts" class="page"><h2>Staff Accounts</h2><div class="panel"><h3 style="margin-top:0">Add Employee Access</h3><form id="staffForm"><div class="field"><label>Employee Name</label><input id="staffName" required></div><div class="field"><label>Role</label><select id="staffRole"><option>Administrator</option><option>Front Desk</option><option>Housekeeping</option><option>Senior Housekeeping</option><option>Assistant Supervisor</option><option>Supervisor</option><option>Manager</option><option>Accounting</option></select></div><div class="field"><label>Username</label><input id="staffUsername" required></div><div class="field"><label>PIN</label><input id="staffPin" type="password" inputmode="numeric" minlength="4" required></div><div class="field" style="align-self:end"><button class="primary">Add Staff Account</button></div></form><p><small>Offline staff records are stored only in this browser. For secure multi-device login, an online server is required.</small></p></div><div class="panel" style="margin-top:18px;overflow:auto"><table><thead><tr><th>Employee</th><th>Role</th><th>Username</th><th>Status</th><th>Action</th></tr></thead><tbody id="staffRows"></tbody></table></div></section>
 <section id="rates" class="page"><div class="rate-title"><img data-logo alt="SD Hotel logo"><h2>Special Promo Rates</h2></div><div class="panel" style="overflow:auto"><table><thead><tr><th>Room Type</th><th>3 Hours</th><th>5 Hours</th><th>Per Night</th><th>Additional Hour</th></tr></thead><tbody><tr><td><b>Single Bedroom</b></td><td>₱500</td><td>₱800</td><td>₱1,500</td><td>₱200</td></tr><tr><td><b>Regular Bedroom</b></td><td>₱600</td><td>₱900</td><td>₱1,800</td><td>₱250</td></tr><tr><td><b>Double Bedroom</b></td><td>₱700</td><td>₱1,200</td><td>₱2,000</td><td>₱250</td></tr><tr><td><b>Family Bedroom</b></td><td>Not Available</td><td>₱1,500</td><td>₱2,300</td><td>₱300</td></tr></tbody></table><p style="margin-top:16px"><b>Room keycard security:</b> ₱1,000 refundable deposit or one valid ID. Refund/return is subject to return of the keycard and no damages.</p></div></section>
 <section id="payments" class="page"><h2>Payments</h2><div class="panel" style="margin-bottom:18px"><h3 style="margin-top:0">Record Payment</h3><form id="paymentForm"><div class="field"><label>Guest / Booking</label><select id="paymentBooking" required></select></div><div class="field"><label>Payment Amount</label><input id="paymentAmount" type="number" min="1" required placeholder="Type exact amount received"></div><div class="field"><label>Payment Method</label><select id="paymentMethod"><option>Cash</option><option>GCash</option><option>Bank Transfer</option><option>Agoda Collect</option><option>Booking.com Collect</option></select></div><div class="field"><label>Payment Reference / Details</label><input id="paymentDetails" placeholder="Optional reference or notes"></div><div class="field" style="align-self:end"><button class="primary">Save Payment</button></div></form></div><div class="panel" style="overflow:auto"><table><thead><tr><th>Date</th><th>Booking Reference</th><th>Guest</th><th>Method</th><th>Payment Reference</th><th>Amount</th><th>Remaining Balance</th></tr></thead><tbody id="paymentRows"></tbody></table></div></section>
@@ -56,8 +342,17 @@ const arrivalPanel=document.createElement('div');arrivalPanel.className='full su
 const bookingPaymentModal=document.createElement('div');bookingPaymentModal.style.cssText='display:none;position:fixed;inset:0;background:#0008;z-index:9999;align-items:center;justify-content:center;padding:18px';bookingPaymentModal.innerHTML='<div class="panel" style="width:min(520px,100%);max-height:90vh;overflow:auto"><h2 id="bookingPaymentTitle" style="margin-top:0">Booking Payment</h2><div id="bookingPaymentGuest" class="summary" style="margin-bottom:12px"></div><div class="field"><label>Downpayment / Payment Amount</label><input id="bookingPaymentAmount" type="number" min="1"></div><div class="field"><label>Payment Type</label><select id="bookingPaymentType"><option>Downpayment</option><option>Additional Payment</option><option>Balance Payment</option><option>Full Payment</option></select></div><div class="field"><label>Payment Method</label><select id="bookingPaymentMethod"><option>Cash</option><option>GCash</option><option>Bank Transfer</option><option>Agoda Collect</option><option>Booking.com Collect</option></select></div><div class="field"><label>Payment Reference / Details</label><input id="bookingPaymentReference" placeholder="Optional reference"></div><div class="field" id="bookingRoomAssignField" style="display:none"><label>Assign Available Room</label><select id="bookingRoomAssign"></select></div><div class="actions" style="margin-top:16px"><button type="button" class="primary" id="bookingPaymentSave">Save</button><button type="button" class="danger" id="bookingPaymentCancel">Cancel</button></div></div>';document.body.appendChild(bookingPaymentModal);let bookingPaymentIndex=-1,bookingPaymentCheckIn=false;const bookingPaymentTitle=bookingPaymentModal.querySelector('#bookingPaymentTitle'),bookingPaymentGuest=bookingPaymentModal.querySelector('#bookingPaymentGuest'),bookingPaymentAmount=bookingPaymentModal.querySelector('#bookingPaymentAmount'),bookingPaymentType=bookingPaymentModal.querySelector('#bookingPaymentType'),bookingPaymentMethod=bookingPaymentModal.querySelector('#bookingPaymentMethod'),bookingPaymentReference=bookingPaymentModal.querySelector('#bookingPaymentReference'),bookingRoomAssignField=bookingPaymentModal.querySelector('#bookingRoomAssignField'),bookingRoomAssign=bookingPaymentModal.querySelector('#bookingRoomAssign');
 const checkoutReminder=document.createElement('div');checkoutReminder.style.cssText='display:none;position:fixed;inset:0;background:#0009;z-index:21000;align-items:center;justify-content:center;padding:18px';checkoutReminder.innerHTML='<div class="panel" style="width:min(500px,100%);border:3px solid #b13f3f"><h2 id="checkoutReminderTitle" style="color:#a32626;margin-top:0">⏰ Checkout Time!</h2><div id="checkoutReminderDetails" class="summary"></div><div class="field" style="margin-top:14px"><label>Keycard Return Status</label><select id="checkoutReminderKeycard"><option>Returned</option><option>Not Returned</option></select></div><div class="actions" style="margin-top:16px"><button type="button" class="danger" id="checkoutReminderComplete">Complete Check Out</button><button type="button" class="primary" id="checkoutReminderView">View Booking</button><button type="button" class="primary" id="checkoutReminderLater">Remind in 10 Minutes</button></div></div>';document.body.appendChild(checkoutReminder);const checkoutReminderTitle=checkoutReminder.querySelector('#checkoutReminderTitle'),checkoutReminderDetails=checkoutReminder.querySelector('#checkoutReminderDetails'),checkoutReminderKeycard=checkoutReminder.querySelector('#checkoutReminderKeycard');let checkoutReminderIndex=-1,checkoutReminderSnooze={};
 function drawSalesGraph(){let canvas=document.getElementById('salesCanvas');if(!canvas||!document.getElementById('dashboard').classList.contains('active'))return;let rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1,w=Math.max(500,rect.width),h=260;canvas.width=w*dpr;canvas.height=h*dpr;let c=canvas.getContext('2d');c.scale(dpr,dpr);let days=[];for(let n=6;n>=0;n--){let d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-n);days.push({date:d,label:d.toLocaleDateString('en-PH',{month:'short',day:'numeric'}),value:0})}bookings.forEach(b=>{let history=b.paymentHistory?.length?b.paymentHistory:(b.paid?[{date:b.created,amount:b.paid}]:[]);history.forEach(x=>{let d=new Date(x.date);d.setHours(0,0,0,0);let day=days.find(y=>y.date.getTime()===d.getTime());if(day)day.value+=+x.amount||0})});let left=58,right=18,top=24,bottom=42,cw=w-left-right,ch=h-top-bottom,max=Math.max(1000,...days.map(x=>x.value)),step=Math.ceil(max/4/500)*500,maxY=step*4;c.clearRect(0,0,w,h);c.font='12px system-ui';c.fillStyle='#806b4c';c.strokeStyle='#e9dfca';c.lineWidth=1;for(let i=0;i<=4;i++){let y=top+ch*i/4,value=maxY-step*i;c.beginPath();c.moveTo(left,y);c.lineTo(w-right,y);c.stroke();c.textAlign='right';c.fillText(value>=1000?'₱'+(value/1000).toFixed(value%1000?1:0)+'k':'₱'+value,left-8,y+4)}let points=days.map((x,i)=>({x:left+cw*i/6,y:top+ch-(x.value/maxY)*ch,...x}));c.strokeStyle='#a98543';c.lineWidth=3;c.lineJoin='round';c.beginPath();points.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.stroke();points.forEach(p=>{c.fillStyle='#a98543';c.beginPath();c.arc(p.x,p.y,5,0,Math.PI*2);c.fill();c.fillStyle='#4d4034';c.textAlign='center';c.fillText(p.label,p.x,h-16);if(p.value>0){c.font='bold 11px system-ui';c.fillText(peso(p.value),p.x,p.y-10);c.font='12px system-ui'}})}
-function calc(){let type=selectedRoomType(),standard=type&&rates[type]?rates[type][stay.value]||0:0,unitRate=rateOverride.value===''?standard:+rateOverride.value,nightCount=stay.value==='Per Night'?Math.max(1,+nights.value||1):1,hourCount=stay.value==='Additional Hour'?Math.max(1,+additionalHoursInput.value||1):1,quantity=stay.value==='Per Night'?nightCount:stay.value==='Additional Hour'?hourCount:1,base=unitRate*quantity,stainFee=+stainFeeInput.value||0,items=(+bathTowelQty.value||0)*100+(+bedsheetQty.value||0)*100+(+pillowQty.value||0)*50+stainFee,otherTotal=items+(+other.value||0),total=base+otherTotal,bal=Math.max(0,total-(+paid.value||0)),paymentStatus=bal<=0?'Fully Paid':(+paid.value||0)>0?'Partially Paid':'Pending';nightsField.style.display=stay.value==='Per Night'?'block':'none';hoursField.style.display=stay.value==='Additional Hour'?'block':'none';if(checkin.value){let d=new Date(checkin.value);if(stay.value==='Per Night'){let afterNoon=d.getHours()>=12,daysToAdd=(afterNoon?1:0)+(nightCount-1);d.setDate(d.getDate()+daysToAdd);d.setHours(12,0,0,0)}else d.setHours(d.getHours()+(stay.value==='3 Hours'?3:stay.value==='5 Hours'?5:hourCount));checkoutDate.value=new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}let multiplier=nightCount>1?' × '+nightCount+' nights':hourCount>1?' × '+hourCount+' hours':'';priceSummary.textContent=`Room Rate: ${peso(unitRate)}${multiplier} • Additional Items/Stain: ${peso(otherTotal)} • Total: ${peso(total)} • Balance: ${peso(bal)} • ${paymentStatus}`;return{unitRate,base,nightCount,hourCount,stainFee,items,otherTotal,total,bal,paymentStatus}}
-['room','stay','nights','additionalHours','checkin','rateOverride','bathTowelQty','bedsheetQty','pillowQty','stainFee','other','paid'].forEach(id=>document.getElementById(id).addEventListener('input',calc));
+function calc(){let type=selectedRoomType(),standard=type&&rates[type]?rates[type][stay.value]||0:0,unitRate=rateOverride.value===''?standard:+rateOverride.value,nightCount=stay.value==='Per Night'?Math.max(1,+nights.value||1):1,hourCount=stay.value==='Additional Hour'?Math.max(1,+additionalHoursInput.value||1):1,quantity=stay.value==='Per Night'?nightCount:stay.value==='Additional Hour'?hourCount:1,base=unitRate*quantity,vatTreatmentValue=vatTreatment.value,vat=vatTreatmentValue==='VAT'?Math.round(base*.12*100)/100:0,stainFee=+stainFeeInput.value||0,items=(+bathTowelQty.value||0)*100+(+bedsheetQty.value||0)*100+(+pillowQty.value||0)*50+stainFee,otherTotal=items+(+other.value||0),total=base+vat+otherTotal,bal=Math.max(0,total-(+paid.value||0)),paymentStatus=bal<=0?'Fully Paid':(+paid.value||0)>0?'Partially Paid':'Pending';
+nightsField.style.display=stay.value==='Per Night'?'block':'none';
+hoursField.style.display=stay.value==='Additional Hour'?'block':'none';
+if(checkin.value){let d=new Date(checkin.value);
+if(stay.value==='Per Night'){let afterNoon=d.getHours()>=12,daysToAdd=(afterNoon?1:0)+(nightCount-1);
+d.setDate(d.getDate()+daysToAdd);
+d.setHours(12,0,0,0)}else d.setHours(d.getHours()+(stay.value==='3 Hours'?3:stay.value==='5 Hours'?5:hourCount));
+checkoutDate.value=new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}let multiplier=nightCount>1?' × '+nightCount+' nights':hourCount>1?' × '+hourCount+' hours':'';
+priceSummary.textContent=`Room Rate: ${peso(unitRate)}${multiplier} • VAT (12%): ${peso(vat)} • Additional Items/Stain: ${peso(otherTotal)} • Total: ${peso(total)} • Balance: ${peso(bal)} • ${paymentStatus}`;
+return{unitRate,base,vat,vatTreatment:vatTreatmentValue,nightCount,hourCount,stainFee,items,otherTotal,total,bal,paymentStatus}}
+['room','stay','nights','additionalHours','checkin','rateOverride','bathTowelQty','bedsheetQty','pillowQty','stainFee','other','paid','vatTreatment'].forEach(id=>document.getElementById(id).addEventListener('input',calc));
 ['stay','nights','additionalHours','checkin'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{setRoomOptions();setStayOptions();calc()}));
 stay.addEventListener('change',calc);room.addEventListener('change',()=>{setStayOptions();calc()});
 source.addEventListener('change',()=>{if(source.value==='Agoda')method.value='Agoda Collect';if(source.value==='Booking.com')method.value='Booking.com Collect'});
@@ -79,9 +374,102 @@ checkoutReminder.querySelector('#checkoutReminderView').onclick=()=>{let b=booki
 checkoutReminder.querySelector('#checkoutReminderLater').onclick=()=>{let b=bookings[checkoutReminderIndex];if(b)checkoutReminderSnooze[b.ref]=Date.now()+10*60000;closeCheckoutReminder()};
 setInterval(checkCheckoutReminders,30000);
 function deductBookingInventory(ref,guestName,roomNumber){let requested=[{item:'Bath Towel',qty:+bathTowelQty.value||0},{item:'Bedsheet',qty:+bedsheetQty.value||0},{item:'Pillow',qty:+pillowQty.value||0}].filter(x=>x.qty>0),shortages=requested.filter(x=>(+inventory[x.item]||0)<x.qty);if(shortages.length){alert('Booking not saved. Insufficient inventory:\n'+shortages.map(x=>`${x.item}: requested ${x.qty}, available ${inventory[x.item]||0}`).join('\n')+'\n\nPlease record Stock In first.');return false}let now=new Date().toISOString();requested.forEach(x=>{let unitPrice=+inventoryPrices[x.item]||0;inventory[x.item]-=x.qty;inventoryTransactions.unshift({date:now,item:x.item,movement:'OUT',qty:x.qty,unitPrice,totalCost:x.qty*unitPrice,balance:inventory[x.item],note:`Automatic booking use — ${ref} — ${guestName} — Room ${roomNumber}`})});return true}
-bookingForm.onsubmit=e=>{e.preventDefault();let r=rooms.find(x=>x.number===room.value),reservedType=selectedRoomType();if(!r&&bookingStatusInput.value==='Checked-in'){alert('Please assign a room before checking in the guest.');return}let c=calc(),autoReserved=bookingStatusInput.value==='Checked-in'&&c.bal>0;if(autoReserved)bookingStatusInput.value='Reserved';let now=new Date(),ref='SD-'+now.getFullYear().toString().slice(-2)+(now.getMonth()+1).toString().padStart(2,'0')+'-'+String(Date.now()).slice(-5),initialPaid=+paid.value||0;if(initialPaid>c.total){alert(`Payment cannot be higher than the booking total of ${peso(c.total)}.`);return}let initialPaymentType=initialPaid<=0?'No Payment':initialPaid>=c.total?'Full Payment':'Downpayment',reservationPaymentStatus=bookingStatusInput.value==='Reserved'?(initialPaid>=c.total?'Fully Paid':initialPaid>0?'Downpayment Received':'Pending Downpayment'):'Not Applicable';if(!deductBookingInventory(ref,guest.value,r?r.number:'Unassigned'))return;bookings.unshift({ref,source:source.value,otaRef:otaRef.value,guest:guest.value,contact:contact.value,room:r?r.number:'Unassigned',type:r?r.type:reservedType,keycardNo:keycardNo.value,keycardSecurity:keycardSecurity.value,keycardDeposit:+keycardDeposit.value||0,keycardReturn:'Issued',stay:stay.value,nights:c.nightCount,additionalHours:c.hourCount,checkin:checkin.value,checkoutDate:checkoutDate.value,unitRate:c.unitRate,base:c.base,bathTowelQty:+bathTowelQty.value||0,bedsheetQty:+bedsheetQty.value||0,pillowQty:+pillowQty.value||0,stainFee:c.stainFee,itemCharges:c.items,chargeDesc:chargeDesc.value,manualOther:+other.value||0,other:c.otherTotal,total:c.total,paid:initialPaid,balance:c.bal,paymentStatus:c.paymentStatus,reservationPaymentStatus,method:method.value,paymentRef:paymentRef.value,initialPaymentType,paymentHistory:initialPaid?[{date:now.toISOString(),amount:initialPaid,paymentType:initialPaymentType,method:method.value,reference:paymentRef.value,balance:c.bal}]:[],status:bookingStatusInput.value,created:now.toISOString()});if(bookingStatusInput.value==='Checked-in'&&r)r.status='Occupied';save();bookingForm.reset();nights.value=additionalHoursInput.value=1;bathTowelQty.value=bedsheetQty.value=pillowQty.value=other.value=paid.value=0;stainFeeInput.value=0;keycardDeposit.value=1000;alert('Booking saved: '+ref+(bookingStatusInput.value==='Reserved'&&initialPaid>0?' — Downpayment received: '+peso(initialPaid):'')+'\nInventory was automatically updated.');document.querySelector('[data-page="bookings"]').click()};
-function extendStay(i){let b=bookings[i];if(!b||b.status!=='Checked-in'){alert('Only checked-in guests can extend their stay.');return}let choice=prompt('Choose extension type:\n1 — Per Night\n2 — 3 Hours\n3 — 5 Hours\n4 — Per Hour\n\nEnter 1, 2, 3, or 4:','1');if(choice===null)return;let types={'1':'Per Night','2':'3 Hours','3':'5 Hours','4':'Additional Hour'},extensionType=types[String(choice).trim()];if(!extensionType){alert('Please enter 1, 2, 3, or 4.');return}let quantityLabel=extensionType==='Per Night'?'additional nights':extensionType==='Additional Hour'?'additional hours':extensionType==='3 Hours'?'3-hour extensions':'5-hour extensions',quantity=prompt(`How many ${quantityLabel}?`,1);if(quantity===null)return;quantity=Math.floor(+quantity||0);if(quantity<1){alert('Enter at least 1.');return}let oldCheckout=new Date(b.checkoutDate),newCheckout=new Date(oldCheckout),hours=0;if(extensionType==='Per Night'){newCheckout.setDate(newCheckout.getDate()+quantity);newCheckout.setHours(12,0,0,0)}else{hours=(extensionType==='3 Hours'?3:extensionType==='5 Hours'?5:1)*quantity;newCheckout.setHours(newCheckout.getHours()+hours)}let conflict=bookings.find((x,j)=>j!==i&&x.room===b.room&&!['Cancelled','Checked-out'].includes(x.status)&&new Date(x.checkin)<newCheckout&&new Date(x.checkoutDate||x.checkin)>oldCheckout);if(conflict){alert(`Cannot extend Room ${b.room}. It conflicts with ${conflict.guest} (${conflict.ref}) starting ${new Date(conflict.checkin).toLocaleString('en-PH')}.`);return}let rate=+rates[b.type]?.[extensionType]||0;if(!rate){alert(`${extensionType} extension is not available for ${b.type}.`);return}let charge=rate*quantity,description=extensionType==='Per Night'?`${quantity} night${quantity>1?'s':''}`:extensionType==='Additional Hour'?`${quantity} hour${quantity>1?'s':''}`:`${quantity} × ${extensionType}`;if(!confirm(`Extend ${b.guest} by ${description}?\n\nRate: ${peso(rate)}\nAdditional charge: ${peso(charge)}\nNew checkout: ${newCheckout.toLocaleString('en-PH')}\n\nThe charge will be added to the remaining balance.`))return;if(extensionType==='Per Night')b.nights=(+b.nights||1)+quantity;else b.additionalHours=(+b.additionalHours||0)+hours;b.base=(+b.base||0)+charge;b.total=(+b.total||0)+charge;b.balance=Math.max(0,b.total-(+b.paid||0));b.paymentStatus=b.balance<=0?'Fully Paid':b.paid>0?'Partially Paid':'Pending';b.checkoutDate=new Date(newCheckout-newCheckout.getTimezoneOffset()*60000).toISOString().slice(0,16);b.extensionHistory=b.extensionHistory||[];b.extensionHistory.push({date:new Date().toISOString(),type:extensionType,quantity,hours,rate,charge,checkoutDate:b.checkoutDate});save();render();updateDashboardMetrics();alert(`Stay extended successfully.\nExtension: ${description}\nNew checkout: ${newCheckout.toLocaleString('en-PH')}\nAdditional charge: ${peso(charge)}\nRemaining balance: ${peso(b.balance)}\n\nUse Add Payment to record the extension payment.`)}
-function render(){setRoomOptions();setStayOptions();calc();paymentBooking.innerHTML='<option value="">Select guest booking</option>'+bookings.map((b,i)=>b.balance>0?`<option value="${i}">${b.ref} — ${b.guest} — Balance ${peso(b.balance)}</option>`:'').join('');let guestRooms=rooms.filter(r=>rates[r.type]),active=bookings.filter(b=>b.status==='Checked-in').length,occupied=guestRooms.filter(r=>r.status==='Occupied').length,p=Math.round(occupied/guestRooms.length*100),today=new Date().toDateString(),rev=bookings.filter(b=>new Date(b.created).toDateString()===today).reduce((s,b)=>s+b.paid,0);todayRevenue.textContent=peso(rev);activeCount.textContent=active;availableCount.textContent=guestRooms.filter(r=>r.status==='Available').length;balanceTotal.textContent=peso(bookings.reduce((s,b)=>s+b.balance,0));occupancyDonut.style.setProperty('--p',p+'%');occupancyDonut.dataset.label=p+'%';let counts={Reserved:0,'Checked-in':0,'Checked-out':0,Cancelled:0};bookings.forEach(b=>counts[b.status]=(counts[b.status]||0)+1);statusSummary.innerHTML=Object.entries(counts).map(([k,v])=>`<tr><td>${k}</td><td><b>${v}</b></td></tr>`).join('');bookingRows.innerHTML=bookings.map((b,i)=>{let extras=[b.bathTowelQty?`Towel ×${b.bathTowelQty}`:'',b.bedsheetQty?`Bedsheet ×${b.bedsheetQty}`:'',b.pillowQty?`Pillow ×${b.pillowQty}`:'',b.stainFee?`Stain ${peso(b.stainFee)}`:''].filter(Boolean).join(', ')||'—',stayLabel=b.stay==='Per Night'&&b.nights>1?`${b.nights} Nights`:b.stay,payStatus=b.balance<=0?'Fully Paid':b.paid>0?'Partially Paid':'Pending',reservationType=b.paid<=0?'No Payment':b.paid>=b.total?'Full Payment':'Downpayment',displayStatus=b.status==='Reserved'?(b.balance<=0?'Reserved – Fully Paid':b.paid>0?'Reserved – Downpayment Received':'Reserved – Pending Downpayment'):b.status;return `<tr><td>${b.ref}</td><td><span class="badge">${b.source||'Walk-in'}</span></td><td>${b.otaRef||'—'}</td><td>${b.guest}</td><td>${b.room}</td><td>${b.keycardNo||'—'}</td><td>${b.keycardSecurity||'—'}${b.keycardDeposit?' '+peso(b.keycardDeposit):''}</td><td><span class="badge">${b.keycardReturn||'—'}</span></td><td>${stayLabel}</td><td>${extras}</td><td>${new Date(b.checkin).toLocaleString()}</td><td>${b.checkoutDate?new Date(b.checkoutDate).toLocaleString():'—'}</td><td>${peso(b.total)}</td><td>${peso(b.paid)}</td><td>${peso(b.balance)}</td><td><span class="badge">${reservationType}</span></td><td><span class="badge">${payStatus}</span></td><td><span class="badge">${displayStatus}</span></td><td>${canVoidPayments()?`<button class="primary" onclick="correctBookingPayment(${i})">Correct Payment</button> `:''}${b.balance>0?`<button class="primary" onclick="openBookingPayment(${i},false)">Add Payment</button> `:''}${b.status==='Reserved'?`<button class="primary" onclick="openBookingPayment(${i},true)">${b.balance>0?'Pay Balance & Check In':'Check In'}</button> <button class="danger" onclick="cancelBooking(${i})">Cancel</button>`:''}${b.status==='Checked-in'?`${b.stay==='Per Night'?`<button class="primary" onclick="extendStay(${i})">Extend Stay</button> `:''}<button class="danger" onclick="checkout(${i})">Check Out</button>`:''}</td></tr>`}).join('')||'<tr><td colspan="19">No bookings yet.</td></tr>';roomCards.innerHTML=rooms.map((r,i)=>`<div class="card room" ${r.type==='Office'?'':`onclick="cycleRoom(${i})"`}><strong>${r.number}</strong><small>${r.type}</small><p><span class="badge ${r.status}">${r.status}</span></p></div>`).join('');let transactions=[];bookings.forEach(b=>{let history=b.paymentHistory?.length?b.paymentHistory:(b.paid?[{date:b.created,amount:b.paid,method:b.method,reference:b.paymentRef||'',balance:b.balance}]:[]);history.forEach(x=>transactions.push({...x,ref:b.ref,guest:b.guest}))});transactions.sort((a,b)=>new Date(b.date)-new Date(a.date));paymentRows.innerHTML=transactions.map(x=>`<tr><td>${new Date(x.date).toLocaleString()}</td><td>${x.ref}</td><td>${x.guest}</td><td>${x.method}</td><td>${x.reference||'—'}</td><td>${peso(x.amount)}</td><td>${peso(x.balance)}</td></tr>`).join('')||'<tr><td colspan="7">No payments recorded.</td></tr>'}
+bookingForm.onsubmit=e=>{e.preventDefault();
+let r=rooms.find(x=>x.number===room.value),reservedType=selectedRoomType();
+if(!r&&bookingStatusInput.value==='Checked-in'){alert('Please assign a room before checking in the guest.');
+return}let c=calc(),autoReserved=bookingStatusInput.value==='Checked-in'&&c.bal>0;
+if(autoReserved)bookingStatusInput.value='Reserved';
+let now=new Date(),ref='SD-'+now.getFullYear().toString().slice(-2)+(now.getMonth()+1).toString().padStart(2,'0')+'-'+String(Date.now()).slice(-5),initialPaid=+paid.value||0;
+if(initialPaid>c.total){alert(`Payment cannot be higher than the booking total of ${peso(c.total)}.`);
+return}let initialPaymentType=initialPaid<=0?'No Payment':initialPaid>=c.total?'Full Payment':'Downpayment',reservationPaymentStatus=bookingStatusInput.value==='Reserved'?(initialPaid>=c.total?'Fully Paid':initialPaid>0?'Downpayment Received':'Pending Downpayment'):'Not Applicable';
+if(!deductBookingInventory(ref,guest.value,r?r.number:'Unassigned'))return;
+bookings.unshift({ref,source:source.value,otaRef:otaRef.value,guest:guest.value,contact:contact.value,room:r?r.number:'Unassigned',type:r?r.type:reservedType,keycardNo:keycardNo.value,keycardSecurity:keycardSecurity.value,keycardDeposit:+keycardDeposit.value||0,keycardReturn:'Issued',stay:stay.value,nights:c.nightCount,additionalHours:c.hourCount,checkin:checkin.value,checkoutDate:checkoutDate.value,unitRate:c.unitRate,base:c.base,vat:c.vat,vatTreatment:c.vatTreatment,bathTowelQty:+bathTowelQty.value||0,bedsheetQty:+bedsheetQty.value||0,pillowQty:+pillowQty.value||0,stainFee:c.stainFee,itemCharges:c.items,chargeDesc:chargeDesc.value,manualOther:+other.value||0,other:c.otherTotal,total:c.total,paid:initialPaid,balance:c.bal,paymentStatus:c.paymentStatus,reservationPaymentStatus,method:method.value,paymentRef:paymentRef.value,initialPaymentType,paymentHistory:initialPaid?[{date:now.toISOString(),amount:initialPaid,paymentType:initialPaymentType,method:method.value,reference:paymentRef.value,balance:c.bal}]:[],status:bookingStatusInput.value,created:now.toISOString()});
+if(bookingStatusInput.value==='Checked-in'&&r)r.status='Occupied';
+save();
+bookingForm.reset();
+nights.value=additionalHoursInput.value=1;
+bathTowelQty.value=bedsheetQty.value=pillowQty.value=other.value=paid.value=0;
+stainFeeInput.value=0;
+keycardDeposit.value=1000;
+vatTreatment.value='VAT';
+alert('Booking saved: '+ref+(bookingStatusInput.value==='Reserved'&&initialPaid>0?' — Downpayment received: '+peso(initialPaid):'')+'\nInventory was automatically updated.');
+document.querySelector('[data-page="bookings"]').click()};
+
+function extendStay(i){let b=bookings[i];
+if(!b||b.status!=='Checked-in'){alert('Only checked-in guests can extend their stay.');
+return}let choice=prompt('Choose extension type:\n1 — Per Night\n2 — 3 Hours\n3 — 5 Hours\n4 — Per Hour\n\nEnter 1, 2, 3, or 4:','1');
+if(choice===null)return;
+let types={'1':'Per Night','2':'3 Hours','3':'5 Hours','4':'Additional Hour'},extensionType=types[String(choice).trim()];
+if(!extensionType){alert('Please enter 1, 2, 3, or 4.');
+return}let quantityLabel=extensionType==='Per Night'?'additional nights':extensionType==='Additional Hour'?'additional hours':extensionType==='3 Hours'?'3-hour extensions':'5-hour extensions',quantity=prompt(`How many ${quantityLabel}?`,1);
+if(quantity===null)return;
+quantity=Math.floor(+quantity||0);
+if(quantity<1){alert('Enter at least 1.');
+return}let oldCheckout=new Date(b.checkoutDate),newCheckout=new Date(oldCheckout),hours=0;
+if(extensionType==='Per Night'){newCheckout.setDate(newCheckout.getDate()+quantity);
+newCheckout.setHours(12,0,0,0)}else{hours=(extensionType==='3 Hours'?3:extensionType==='5 Hours'?5:1)*quantity;
+newCheckout.setHours(newCheckout.getHours()+hours)}let conflict=bookings.find((x,j)=>j!==i&&x.room===b.room&&!['Cancelled','Checked-out'].includes(x.status)&&new Date(x.checkin)<newCheckout&&new Date(x.checkoutDate||x.checkin)>oldCheckout);
+if(conflict){alert(`Cannot extend Room ${b.room}. It conflicts with ${conflict.guest} (${conflict.ref}) starting ${new Date(conflict.checkin).toLocaleString('en-PH')}.`);
+return}let rate=+rates[b.type]?.[extensionType]||0;
+if(!rate){alert(`${extensionType} extension is not available for ${b.type}.`);
+return}let charge=rate*quantity,vatCharge=b.vatTreatment==='Exempt'?0:Math.round(charge*.12*100)/100,description=extensionType==='Per Night'?`${quantity} night${quantity>1?'s':''}`:extensionType==='Additional Hour'?`${quantity} hour${quantity>1?'s':''}`:`${quantity} × ${extensionType}`;
+if(!confirm(`Extend ${b.guest} by ${description}?\n\nRate: ${peso(rate)}\nVAT (12%): ${peso(vatCharge)}\nAdditional total: ${peso(charge+vatCharge)}\nNew checkout: ${newCheckout.toLocaleString('en-PH')}\n\nThe charge will be added to the remaining balance.`))return;
+if(extensionType==='Per Night')b.nights=(+b.nights||1)+quantity;
+else b.additionalHours=(+b.additionalHours||0)+hours;
+b.base=(+b.base||0)+charge;
+b.vat=(+b.vat||0)+vatCharge;
+b.total=(+b.total||0)+charge+vatCharge;
+b.balance=Math.max(0,b.total-(+b.paid||0));
+b.paymentStatus=b.balance<=0?'Fully Paid':b.paid>0?'Partially Paid':'Pending';
+b.checkoutDate=new Date(newCheckout-newCheckout.getTimezoneOffset()*60000).toISOString().slice(0,16);
+b.extensionHistory=b.extensionHistory||[];
+b.extensionHistory.push({date:new Date().toISOString(),type:extensionType,quantity,hours,rate,charge,vat:vatCharge,checkoutDate:b.checkoutDate});
+save();
+render();
+updateDashboardMetrics();
+alert(`Stay extended successfully.\nExtension: ${description}\nNew checkout: ${newCheckout.toLocaleString('en-PH')}\nRoom charge: ${peso(charge)}\nVAT (12%): ${peso(vatCharge)}\nRemaining balance: ${peso(b.balance)}\n\nUse Add Payment to record the extension payment.`)}
+function render(){setRoomOptions();
+setStayOptions();
+calc();
+paymentBooking.innerHTML='<option value="">Select guest booking</option>'+bookings.map((b,i)=>b.balance>0?`<option value="${i}">${b.ref} — ${b.guest} — Balance ${peso(b.balance)}</option>`:'').join('');
+let guestRooms=rooms.filter(r=>rates[r.type]),active=bookings.filter(b=>b.status==='Checked-in').length,occupied=guestRooms.filter(r=>r.status==='Occupied').length,p=Math.round(occupied/guestRooms.length*100),today=new Date().toDateString(),rev=bookings.filter(b=>new Date(b.created).toDateString()===today).reduce((s,b)=>s+b.paid,0);
+todayRevenue.textContent=peso(rev);
+activeCount.textContent=active;
+availableCount.textContent=guestRooms.filter(r=>r.status==='Available').length;
+balanceTotal.textContent=peso(bookings.reduce((s,b)=>s+b.balance,0));
+occupancyDonut.style.setProperty('--p',p+'%');
+occupancyDonut.dataset.label=p+'%';
+let counts={Reserved:0,'Checked-in':0,'Checked-out':0,Cancelled:0};
+bookings.forEach(b=>counts[b.status]=(counts[b.status]||0)+1);
+statusSummary.innerHTML=Object.entries(counts).map(([k,v])=>`<tr><td>${k}</td><td><b>${v}</b></td></tr>`).join('');
+bookingRows.innerHTML=bookings.map((b,i)=>{let extras=[b.bathTowelQty?`Towel ×${b.bathTowelQty}`:'',b.bedsheetQty?`Bedsheet ×${b.bedsheetQty}`:'',b.pillowQty?`Pillow ×${b.pillowQty}`:'',b.stainFee?`Stain ${peso(b.stainFee)}`:''].filter(Boolean).join(', ')||'—',stayLabel=b.stay==='Per Night'&&b.nights>1?`${b.nights} Nights`:b.stay,payStatus=b.balance<=0?'Fully Paid':b.paid>0?'Partially Paid':'Pending',reservationType=b.paid<=0?'No Payment':b.paid>=b.total?'Full Payment':'Downpayment',displayStatus=b.status==='Reserved'?(b.balance<=0?'Reserved – Fully Paid':b.paid>0?'Reserved – Downpayment Received':'Reserved – Pending Downpayment'):b.status;
+return `<tr><td>${b.ref}</td>
+<td><span class="badge">${b.source||'Walk-in'}</span></td>
+<td>${b.otaRef||'—'}</td>
+<td>${b.guest}</td>
+<td>${b.room}</td>
+<td>${b.keycardNo||'—'}</td>
+<td>${b.keycardSecurity||'—'}${b.keycardDeposit?' '+peso(b.keycardDeposit):''}</td>
+<td><span class="badge">${b.keycardReturn||'—'}</span></td>
+<td>${stayLabel}</td>
+<td>${extras}</td>
+<td>${new Date(b.checkin).toLocaleString()}</td>
+<td>${b.checkoutDate?new Date(b.checkoutDate).toLocaleString():'—'}</td>
+<td>${peso(b.vat||0)}</td>
+<td>${peso(b.total)}</td>
+<td>${peso(b.paid)}</td>
+<td>${peso(b.balance)}</td>
+<td><span class="badge">${reservationType}</span></td>
+<td><span class="badge">${payStatus}</span></td>
+<td><span class="badge">${displayStatus}</span></td>
+<td>${canVoidPayments()?`<button class="primary" onclick="correctBookingPayment(${i})">Correct Payment</button> `:''}${b.balance>0?`<button class="primary" onclick="openBookingPayment(${i},false)">Add Payment</button> `:''}${b.status==='Reserved'?`<button class="primary" onclick="openBookingPayment(${i},true)">${b.balance>0?'Pay Balance & Check In':'Check In'}</button> <button class="danger" onclick="cancelBooking(${i})">Cancel</button>`:''}${b.status==='Checked-in'?`${b.stay==='Per Night'?`<button class="primary" onclick="extendStay(${i})">Extend Stay</button> `:''}<button class="danger" onclick="checkout(${i})">Check Out</button>`:''}</td>
+</tr>`}).join('')||'<tr><td colspan="20">No bookings yet.</td></tr>';
+roomCards.innerHTML=rooms.map((r,i)=>`<div class="card room" ${r.type==='Office'?'':`onclick="cycleRoom(${i})"`}><strong>${r.number}</strong><small>${r.type}</small><p><span class="badge ${r.status}">${r.status}</span></p></div>`).join('');
+let transactions=[];
+bookings.forEach(b=>{let history=b.paymentHistory?.length?b.paymentHistory:(b.paid?[{date:b.created,amount:b.paid,method:b.method,reference:b.paymentRef||'',balance:b.balance}]:[]);
+history.forEach(x=>transactions.push({...x,ref:b.ref,guest:b.guest}))});
+transactions.sort((a,b)=>new Date(b.date)-new Date(a.date));
+paymentRows.innerHTML=transactions.map(x=>`<tr><td>${new Date(x.date).toLocaleString()}</td><td>${x.ref}</td><td>${x.guest}</td><td>${x.method}</td><td>${x.reference||'—'}</td><td>${peso(x.amount)}</td><td>${peso(x.balance)}</td></tr>`).join('')||'<tr><td colspan="7">No payments recorded.</td></tr>'}
 let calendarDate=new Date();calendarDate.setDate(1);
 function changeCalendarMonth(n){calendarDate.setMonth(calendarDate.getMonth()+n);renderCalendar()}
 function renderCalendar(){let y=calendarDate.getFullYear(),m=calendarDate.getMonth(),first=new Date(y,m,1),start=new Date(y,m,1-first.getDay()),names=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];calendarTitle.textContent=first.toLocaleDateString('en-PH',{month:'long',year:'numeric'});let html=names.map(x=>`<div class="calendar-head">${x}</div>`).join('');for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let dateKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,dayStart=new Date(d);dayStart.setHours(0,0,0,0);let dayEnd=new Date(d);dayEnd.setHours(23,59,59,999);let events=bookings.filter(b=>{let a=new Date(b.checkin),z=b.checkoutDate?new Date(b.checkoutDate):a;return a<=dayEnd&&z>=dayStart});html+=`<div class="calendar-day ${d.getMonth()===m?'':'muted'}" onclick="openReservationDate('${dateKey}')"><div class="calendar-number">${d.getDate()}</div>${events.map(b=>`<span class="calendar-event ${b.status==='Checked-in'?'checked':''}" title="${b.guest} — ${b.room}">${b.room} • ${b.guest} • ${b.status}</span>`).join('')}</div>`}calendarGrid.innerHTML=html}
@@ -101,7 +489,38 @@ function deleteExpense(id){if(!confirm('Delete this expense?'))return;expenses=e
 function renderExpenses(){let today=sumExpenses('today'),month=sumExpenses('month'),revenue=sumRevenue('month');expenseToday.textContent=peso(today);expenseMonth.textContent=peso(month);netIncomeMonth.textContent=peso(revenue-month);expenseRows.innerHTML=expenses.map(x=>`<tr><td>${new Date(x.date+'T12:00').toLocaleDateString('en-PH')}</td><td>${x.category}</td><td>${x.description}</td><td>${peso(x.amount)}</td><td><button class="danger" onclick="deleteExpense(${x.id})">Delete</button></td></tr>`).join('')||'<tr><td colspan="5">No expenses recorded.</td></tr>'}
 function drawRevenueCanvas(){let canvas=revenueCanvas,rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1,w=Math.max(600,rect.width),h=280;canvas.width=w*dpr;canvas.height=h*dpr;let c=canvas.getContext('2d');c.scale(dpr,dpr);let days=[];for(let n=29;n>=0;n--){let d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-n);days.push({date:d,label:d.getDate(),value:0})}paymentTransactions().forEach(x=>{let d=new Date(x.date);d.setHours(0,0,0,0);let row=days.find(y=>y.date.getTime()===d.getTime());if(row)row.value+=+x.amount||0});let left=58,right=18,top=25,bottom=38,cw=w-left-right,ch=h-top-bottom,max=Math.max(1000,...days.map(x=>x.value)),step=Math.ceil(max/4/500)*500,maxY=step*4;c.clearRect(0,0,w,h);c.font='11px system-ui';c.fillStyle='#806b4c';c.strokeStyle='#e9dfca';for(let i=0;i<=4;i++){let y=top+ch*i/4,value=maxY-step*i;c.beginPath();c.moveTo(left,y);c.lineTo(w-right,y);c.stroke();c.textAlign='right';c.fillText(value>=1000?'₱'+(value/1000).toFixed(1)+'k':'₱'+value,left-7,y+4)}let pts=days.map((x,i)=>({x:left+cw*i/29,y:top+ch-(x.value/maxY)*ch,...x}));c.strokeStyle='#a98543';c.lineWidth=3;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.stroke();pts.forEach((p,i)=>{if(i%5===0||i===29){c.fillStyle='#4d4034';c.textAlign='center';c.fillText(p.label,p.x,h-14)}})}
 function renderRevenueReports(){let daily=sumRevenue('today'),weekly=sumRevenue('week'),monthly=sumRevenue('month'),dExp=sumExpenses('today'),wExp=sumExpenses('week'),mExp=sumExpenses('month');reportDaily.textContent=peso(daily);reportWeekly.textContent=peso(weekly);reportMonthly.textContent=peso(monthly);revenueSummaryRows.innerHTML=[['Today',daily,dExp],['Last 7 Days',weekly,wExp],['This Month',monthly,mExp]].map(x=>`<tr><td>${x[0]}</td><td>${peso(x[1])}</td><td>${peso(x[2])}</td><td><b>${peso(x[1]-x[2])}</b></td></tr>`).join('');setTimeout(drawRevenueCanvas)}
-function renderOptionalReports(){let period=reportPeriod.value,{start,end}=dateBounds(period),inPeriod=date=>period==='all'||(new Date(date)>=start&&new Date(date)<=end),filtered=bookings.filter(b=>inPeriod(b.checkin)),guestRooms=rooms.filter(r=>rates[r.type]),uniqueRooms=new Set(filtered.filter(b=>b.status!=='Cancelled').map(b=>b.room)).size,occupancy=Math.round(uniqueRooms/guestRooms.length*100),revenue=period==='all'?paymentTransactions().reduce((s,x)=>s+(+x.amount||0),0):sumRevenue(period),balance=filtered.filter(b=>b.status!=='Cancelled').reduce((s,b)=>s+(+b.balance||0),0);optionalReportCards.innerHTML=[['Occupancy Report',occupancy+'%'],['Revenue',peso(revenue)],['Guest Count',filtered.length],['Remaining Balance',peso(balance)],['Cancelled',filtered.filter(b=>b.status==='Cancelled').length]].map(x=>`<div class="card">${x[0]}<div class="metric">${x[1]}</div></div>`).join('');optionalGuestRows.innerHTML=filtered.map(b=>`<tr><td>${b.guest}</td><td>${b.room}</td><td><span class="badge">${b.status}</span></td><td>${peso(b.total)}</td><td>${peso(b.paid)}</td><td>${peso(b.balance)}</td><td>${new Date(b.checkin).toLocaleString('en-PH')}</td><td>${b.checkoutDate?new Date(b.checkoutDate).toLocaleString('en-PH'):'—'}</td></tr>`).join('')||'<tr><td colspan="8">No guest records for this period.</td></tr>';let sources={};filtered.forEach(b=>{let key=b.source||'Walk-in';sources[key]=sources[key]||{count:0,revenue:0};sources[key].count++;sources[key].revenue+=+b.paid||0});sourceReportRows.innerHTML=Object.entries(sources).map(([source,x])=>`<tr><td>${source}</td><td>${x.count}</td><td>${peso(x.revenue)}</td></tr>`).join('')||'<tr><td colspan="3">No booking sources for this period.</td></tr>';let cancellations=filtered.filter(b=>b.status==='Cancelled');cancellationRows.innerHTML=cancellations.map(b=>`<tr><td>${b.guest}</td><td>${b.room}</td><td>${b.source||'Walk-in'}</td><td>${new Date(b.checkin).toLocaleDateString('en-PH')}</td><td>${peso(b.paid)}</td></tr>`).join('')||'<tr><td colspan="5">No cancellations for this period.</td></tr>';let tx=paymentTransactions().filter(x=>inPeriod(x.date)).sort((a,b)=>new Date(b.date)-new Date(a.date));reportPaymentRows.innerHTML=tx.map(x=>`<tr><td>${new Date(x.date).toLocaleString('en-PH')}</td><td>${x.guest}</td><td>${x.bookingRef}</td><td>${x.method||'—'}</td><td>${peso(x.amount)}</td><td>${peso(x.balance)}</td></tr>`).join('')||'<tr><td colspan="6">No payments for this period.</td></tr>';let salesBookings=filtered.filter(b=>b.status!=='Cancelled'),logSales=salesBookings.reduce((s,b)=>s+(+b.total||0),0),logPaid=salesBookings.reduce((s,b)=>s+(+b.paid||0),0),logBalance=salesBookings.reduce((s,b)=>s+(+b.balance||0),0),logDeposits=salesBookings.reduce((s,b)=>s+(+b.keycardDeposit||0),0),logCash=0,logGCash=0;salesBookings.forEach(b=>{let history=b.paymentHistory?.length?b.paymentHistory:(b.paid?[{amount:b.paid,method:b.method}]:[]);history.forEach(p=>{let amount=+p.amount||0,method=String(p.method||'').toLowerCase();if(method.includes('gcash'))logGCash+=amount;else if(method.includes('cash'))logCash+=amount})});dailyGuestLogTotals.innerHTML=[['Total Sales',peso(logSales)],['Total Paid',peso(logPaid)],['Cash',peso(logCash)],['GCash',peso(logGCash)],['Deposits',peso(logDeposits)],['Remaining Balance',peso(logBalance)]].map(x=>`<div class="card">${x[0]}<div class="metric">${x[1]}</div></div>`).join('');dailyGuestLogRows.innerHTML=filtered.map(b=>{let stay=b.stay==='Per Night'?((+b.nights||1)+' Night'+((+b.nights||1)>1?'s':'')):b.stay;let method=String(b.method||'').toLowerCase(),cash=method.includes('gcash')?'—':peso(b.paid),gcash=method.includes('gcash')?peso(b.paid):'—',history=b.paymentHistory||[],latest=history.length?history[history.length-1]:null,reference=(latest&&latest.reference)||b.paymentRef||'—',idHeld=String(b.keycardSecurity||'').toLowerCase().includes('valid id')?'Yes':'—';return `<tr><td>${new Date(b.checkin).toLocaleDateString('en-PH')}</td><td>${b.room||'Unassigned'}</td><td>${b.guest}</td><td>${new Date(b.checkin).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'})}</td><td>${b.checkoutDate?new Date(b.checkoutDate).toLocaleString('en-PH'):'—'}</td><td>${stay}</td><td>${peso(b.total)}</td><td>${cash}</td><td>${gcash}</td><td>${reference}</td><td>${b.keycardNo||'—'}</td><td>${idHeld}</td><td>${b.keycardDeposit?peso(b.keycardDeposit):'—'}</td><td style="min-width:120px">________________</td></tr>`}).join('')||'<tr><td colspan="14">No guest records for this period.</td></tr>';}
+function renderOptionalReports(){let period=reportPeriod.value,{start,end}=dateBounds(period),inPeriod=date=>period==='all'||(new Date(date)>=start&&new Date(date)<=end),filtered=bookings.filter(b=>inPeriod(b.checkin)),guestRooms=rooms.filter(r=>rates[r.type]),uniqueRooms=new Set(filtered.filter(b=>b.status!=='Cancelled').map(b=>b.room)).size,occupancy=Math.round(uniqueRooms/guestRooms.length*100),revenue=period==='all'?paymentTransactions().reduce((s,x)=>s+(+x.amount||0),0):sumRevenue(period),balance=filtered.filter(b=>b.status!=='Cancelled').reduce((s,b)=>s+(+b.balance||0),0);
+optionalReportCards.innerHTML=[['Occupancy Report',occupancy+'%'],['Revenue',peso(revenue)],['Guest Count',filtered.length],['Remaining Balance',peso(balance)],['Cancelled',filtered.filter(b=>b.status==='Cancelled').length]].map(x=>`<div class="card">${x[0]}<div class="metric">${x[1]}</div></div>`).join('');
+optionalGuestRows.innerHTML=filtered.map(b=>`<tr><td>${b.guest}</td>
+<td>${b.room}</td>
+<td><span class="badge">${b.status}</span></td>
+<td>${peso(b.vat||0)}</td>
+<td>${peso(b.total)}</td>
+<td>${peso(b.paid)}</td>
+<td>${peso(b.balance)}</td>
+<td>${new Date(b.checkin).toLocaleString('en-PH')}</td>
+<td>${b.checkoutDate?new Date(b.checkoutDate).toLocaleString('en-PH'):'—'}</td>
+</tr>`).join('')||'<tr><td colspan="9">No guest records for this period.</td></tr>';
+let sources={};
+filtered.forEach(b=>{let key=b.source||'Walk-in';
+sources[key]=sources[key]||{count:0,revenue:0};
+sources[key].count++;
+sources[key].revenue+=+b.paid||0});
+sourceReportRows.innerHTML=Object.entries(sources).map(([source,x])=>`<tr><td>${source}</td><td>${x.count}</td><td>${peso(x.revenue)}</td></tr>`).join('')||'<tr><td colspan="3">No booking sources for this period.</td></tr>';
+let cancellations=filtered.filter(b=>b.status==='Cancelled');
+cancellationRows.innerHTML=cancellations.map(b=>`<tr><td>${b.guest}</td><td>${b.room}</td><td>${b.source||'Walk-in'}</td><td>${new Date(b.checkin).toLocaleDateString('en-PH')}</td><td>${peso(b.paid)}</td></tr>`).join('')||'<tr><td colspan="5">No cancellations for this period.</td></tr>';
+let tx=paymentTransactions().filter(x=>inPeriod(x.date)).sort((a,b)=>new Date(b.date)-new Date(a.date));
+reportPaymentRows.innerHTML=tx.map(x=>`<tr><td>${new Date(x.date).toLocaleString('en-PH')}</td><td>${x.guest}</td><td>${x.bookingRef}</td><td>${x.method||'—'}</td><td>${peso(x.amount)}</td><td>${peso(x.balance)}</td></tr>`).join('')||'<tr><td colspan="6">No payments for this period.</td></tr>';
+let salesBookings=filtered.filter(b=>b.status!=='Cancelled'),logSales=salesBookings.reduce((s,b)=>s+(+b.total||0),0),logPaid=salesBookings.reduce((s,b)=>s+(+b.paid||0),0),logBalance=salesBookings.reduce((s,b)=>s+(+b.balance||0),0),logDeposits=salesBookings.reduce((s,b)=>s+(+b.keycardDeposit||0),0),logCash=0,logGCash=0;
+salesBookings.forEach(b=>{let history=b.paymentHistory?.length?b.paymentHistory:(b.paid?[{amount:b.paid,method:b.method}]:[]);
+history.forEach(p=>{let amount=+p.amount||0,method=String(p.method||'').toLowerCase();
+if(method.includes('gcash'))logGCash+=amount;
+else if(method.includes('cash'))logCash+=amount})});
+dailyGuestLogTotals.innerHTML=[['Total Sales',peso(logSales)],['Total Paid',peso(logPaid)],['Cash',peso(logCash)],['GCash',peso(logGCash)],['Deposits',peso(logDeposits)],['Remaining Balance',peso(logBalance)]].map(x=>`<div class="card">${x[0]}<div class="metric">${x[1]}</div></div>`).join('');
+dailyGuestLogRows.innerHTML=filtered.map(b=>{let stay=b.stay==='Per Night'?((+b.nights||1)+' Night'+((+b.nights||1)>1?'s':'')):b.stay;
+let method=String(b.method||'').toLowerCase(),cash=method.includes('gcash')?'—':peso(b.paid),gcash=method.includes('gcash')?peso(b.paid):'—',history=b.paymentHistory||[],latest=history.length?history[history.length-1]:null,reference=(latest&&latest.reference)||b.paymentRef||'—',idHeld=String(b.keycardSecurity||'').toLowerCase().includes('valid id')?'Yes':'—';
+return `<tr><td>${new Date(b.checkin).toLocaleDateString('en-PH')}</td><td>${b.room||'Unassigned'}</td><td>${b.guest}</td><td>${new Date(b.checkin).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'})}</td><td>${b.checkoutDate?new Date(b.checkoutDate).toLocaleString('en-PH'):'—'}</td><td>${stay}</td><td>${peso(b.total)}</td><td>${cash}</td><td>${gcash}</td><td>${reference}</td><td>${b.keycardNo||'—'}</td><td>${idHeld}</td><td>${b.keycardDeposit?peso(b.keycardDeposit):'—'}</td><td style="min-width:120px">________________</td></tr>`}).join('')||'<tr><td colspan="14">No guest records for this period.</td></tr>';
+}
 staffForm.onsubmit=e=>{e.preventDefault();let username=staffUsername.value.trim();if(staffAccounts.some(x=>x.username.toLowerCase()===username.toLowerCase())){alert('Username already exists.');return}staffAccounts.push({id:Date.now(),name:staffName.value.trim(),role:staffRole.value,username,pin:staffPin.value,active:true});save();staffForm.reset();renderStaffAccounts();alert('Staff account added.')};
 function toggleStaff(id){let s=staffAccounts.find(x=>x.id===id);if(s)s.active=!s.active;save();renderStaffAccounts()}
 function deleteStaff(id){if(!confirm('Delete this staff account?'))return;staffAccounts=staffAccounts.filter(x=>x.id!==id);save();renderStaffAccounts()}
@@ -120,7 +539,58 @@ function recordPayment(i){let b=bookings[i],amount=Number(prompt(`Remaining bala
 paymentForm.onsubmit=e=>{e.preventDefault();if(paymentBooking.value===''){alert('Please select a booking.');return}let i=+paymentBooking.value,b=bookings[i],amount=+paymentAmount.value||0;if(!b){alert('Please select a booking.');return}if(amount<=0){alert('Please enter a payment amount.');return}if(amount>b.balance){alert(`Payment cannot be higher than the remaining balance of ${peso(b.balance)}.`);return}b.paid+=amount;b.balance=Math.max(0,b.total-b.paid);b.paymentStatus=b.balance<=0?'Fully Paid':'Partially Paid';b.paymentHistory=b.paymentHistory||[];b.paymentHistory.push({date:new Date().toISOString(),amount,method:paymentMethod.value,reference:paymentDetails.value,balance:b.balance});save();paymentForm.reset();render();alert(`Payment saved for ${b.guest}. Remaining balance: ${peso(b.balance)}`)};
 function refreshReceiptOptions(){receiptBooking.innerHTML=bookings.length?bookings.map((b,i)=>`<option value="${i}">${b.ref} — ${b.guest} — Room ${b.room}</option>`).join(''):'<option value="">No saved bookings</option>'}
 function printSelectedReceipt(){if(receiptBooking.value===''){alert('There is no saved booking to print.');return}printGuestReceipt(+receiptBooking.value)}
-function printGuestReceipt(i){let b=bookings[i];if(!b)return;let esc=x=>String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])),stayLabel=b.stay==='Per Night'?`${b.nights||1} Night${(b.nights||1)>1?'s':''}`:b.stay==='Additional Hour'?`${b.additionalHours||1} Additional Hour${(b.additionalHours||1)>1?'s':''}`:b.stay,payStatus=b.balance<=0?'FULLY PAID':b.paid>0?'PARTIALLY PAID':'PENDING',lines=[['Room charge — '+stayLabel,b.base],b.bathTowelQty?['Bath towel × '+b.bathTowelQty,b.bathTowelQty*100]:null,b.bedsheetQty?['Bedsheet × '+b.bedsheetQty,b.bedsheetQty*100]:null,b.pillowQty?['Pillow × '+b.pillowQty,b.pillowQty*50]:null,b.stainFee?['Stain fee',b.stainFee]:null,b.manualOther?[(b.chargeDesc||'Other charge'),b.manualOther]:null].filter(Boolean),w=window.open('','_blank','width=760,height=900');if(!w){alert('Please allow pop-ups to print the receipt.');return}w.document.write(`<!doctype html><html><head><title>Guest Receipt ${esc(b.ref)}</title><style>body{font:14px Arial;color:#32291f;margin:0;background:#eee}.receipt{width:680px;margin:20px auto;background:#fff;padding:34px;box-sizing:border-box}.head{text-align:center;border-bottom:2px solid #b38a3c;padding-bottom:15px}.logo{width:85px;height:85px;border-radius:50%}h1{font-family:Georgia;margin:8px 0 2px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin:22px 0}.meta div{border-bottom:1px solid #ddd;padding:6px 0}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left}th:last-child,td:last-child{text-align:right}.totals{margin:18px 0 0 auto;width:320px}.totals div{display:flex;justify-content:space-between;padding:6px}.grand{font-size:18px;font-weight:bold;border-top:2px solid #b38a3c}.status{text-align:center;border:2px solid #b38a3c;padding:9px;font-weight:bold;margin:18px 0}.deposit{background:#f7f3e9;padding:12px}.sign{display:grid;grid-template-columns:1fr 1fr;gap:55px;margin-top:55px;text-align:center}.sign div{border-top:1px solid #333;padding-top:6px}.print{display:block;margin:18px auto;padding:10px 22px;background:#a98543;color:#fff;border:0;border-radius:7px}@media print{body{background:#fff}.receipt{margin:0;width:100%}.print{display:none}}</style></head><body><div class="receipt"><div class="head"><img class="logo" src="${LOGO_DATA}"><h1>SD HOTEL</h1><div>5th Floor, SD Tiangge Mall, along Don Hilario Avenue, Manila East, Barangay San Juan, Taytay, Rizal</div><div>09165661634 / 09561506272 • sdhotel210@gmail.com</div><h2>GUEST RECEIPT</h2></div><div class="meta"><div><b>Receipt/Booking #:</b> ${esc(b.ref)}</div><div><b>Date:</b> ${new Date().toLocaleString('en-PH')}</div><div><b>Guest:</b> ${esc(b.guest)}</div><div><b>Contact:</b> ${esc(b.contact||'—')}</div><div><b>Room:</b> ${esc(b.room)} — ${esc(b.type)}</div><div><b>Source:</b> ${esc(b.source||'Walk-in')}</div><div><b>Check-in:</b> ${new Date(b.checkin).toLocaleString('en-PH')}</div><div><b>Check-out:</b> ${b.checkoutDate?new Date(b.checkoutDate).toLocaleString('en-PH'):'—'}</div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${lines.map(x=>`<tr><td>${esc(x[0])}</td><td>${peso(x[1])}</td></tr>`).join('')}</tbody></table><div class="totals"><div><span>Total Charges</span><b>${peso(b.total)}</b></div><div><span>Amount Paid</span><b>${peso(b.paid)}</b></div><div class="grand"><span>Balance</span><span>${peso(b.balance)}</span></div></div><div class="status">PAYMENT STATUS: ${payStatus}</div><div class="deposit"><b>Keycard:</b> ${esc(b.keycardNo||'—')} &nbsp; | &nbsp; <b>Security:</b> ${esc(b.keycardSecurity||'—')} &nbsp; | &nbsp; <b>Refundable Deposit Received:</b> ${peso(b.keycardDeposit||0)}<br><small>The keycard deposit is separate from room charges and is refundable upon return of the keycard, subject to no damages.</small></div><div class="sign"><div>Guest Signature</div><div>Front Desk</div></div><button class="print" onclick="window.print()">Print Receipt</button></div></body></html>`);w.document.close()}
+function printGuestReceipt(i){let b=bookings[i];
+if(!b)return;
+let esc=x=>String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])),stayLabel=b.stay==='Per Night'?`${b.nights||1} Night${(b.nights||1)>1?'s':''}`:b.stay==='Additional Hour'?`${b.additionalHours||1} Additional Hour${(b.additionalHours||1)>1?'s':''}`:b.stay,payStatus=b.balance<=0?'FULLY PAID':b.paid>0?'PARTIALLY PAID':'PENDING',lines=[['Room charge — '+stayLabel,b.base],b.vat?['VAT (12% of room charge)',b.vat]:null
+,b.bathTowelQty?['Bath towel × '+b.bathTowelQty,b.bathTowelQty*100]:null,b.bedsheetQty?['Bedsheet × '+b.bedsheetQty,b.bedsheetQty*100]:null,b.pillowQty?['Pillow × '+b.pillowQty,b.pillowQty*50]:null,b.stainFee?['Stain fee',b.stainFee]:null,b.manualOther?[(b.chargeDesc||'Other charge'),b.manualOther]:null].filter(Boolean),w=window.open('','_blank','width=760,height=900');
+if(!w){alert('Please allow pop-ups to print the receipt.');
+return}w.document.write(`<!doctype html><html><head><title>Guest Receipt ${esc(b.ref)}</title><style>body{font:14px Arial;
+color:#32291f;
+margin:0;
+background:#eee}.receipt{width:680px;
+margin:20px auto;
+background:#fff;
+padding:34px;
+box-sizing:border-box}.head{text-align:center;
+border-bottom:2px solid #b38a3c;
+padding-bottom:15px}.logo{width:85px;
+height:85px;
+border-radius:50%}h1{font-family:Georgia;
+margin:8px 0 2px}.meta{display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px 24px;
+margin:22px 0}.meta div{border-bottom:1px solid #ddd;
+padding:6px 0}table{width:100%;
+border-collapse:collapse}th,td{padding:9px;
+border-bottom:1px solid #ddd;
+text-align:left}th:last-child,td:last-child{text-align:right}.totals{margin:18px 0 0 auto;
+width:320px}.totals div{display:flex;
+justify-content:space-between;
+padding:6px}.grand{font-size:18px;
+font-weight:bold;
+border-top:2px solid #b38a3c}.status{text-align:center;
+border:2px solid #b38a3c;
+padding:9px;
+font-weight:bold;
+margin:18px 0}.deposit{background:#f7f3e9;
+padding:12px}.sign{display:grid;
+grid-template-columns:1fr 1fr;
+gap:55px;
+margin-top:55px;
+text-align:center}.sign div{border-top:1px solid #333;
+padding-top:6px}.print{display:block;
+margin:18px auto;
+padding:10px 22px;
+background:#a98543;
+color:#fff;
+border:0;
+border-radius:7px}@media print{body{background:#fff}.receipt{margin:0;
+width:100%}.print{display:none}}</style></head><body><div class="receipt"><div class="head"><img class="logo" src="${LOGO_DATA}"><h1>SD HOTEL</h1><div>5th Floor, SD Tiangge Mall, along Don Hilario Avenue, Manila East, Barangay San Juan, Taytay, Rizal</div><div>09165661634 / 09561506272 • sdhotel210@gmail.com</div><h2>GUEST RECEIPT</h2></div><div class="meta"><div><b>Receipt/Booking #:</b> ${esc(b.ref)}</div><div><b>Date:</b> ${new Date().toLocaleString('en-PH')}</div><div><b>Guest:</b> ${esc(b.guest)}</div><div><b>Contact:</b> ${esc(b.contact||'—')}</div><div><b>Room:</b> ${esc(b.room)} — ${esc(b.type)}</div><div><b>Source:</b> ${esc(b.source||'Walk-in')}</div><div><b>Check-in:</b> ${new Date(b.checkin).toLocaleString('en-PH')}</div><div><b>Check-out:</b> ${b.checkoutDate?new Date(b.checkoutDate).toLocaleString('en-PH'):'—'}</div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${lines.map(x=>`<tr><td>${esc(x[0])}</td><td>${peso(x[1])}</td></tr>`).join('')}</tbody></table><div class="totals"><div><span>Total Charges</span><b>${peso(b.total)}</b></div><div><span>Amount Paid</span><b>${peso(b.paid)}</b></div><div class="grand"><span>Balance</span><span>${peso(b.balance)}</span></div></div><div class="status">PAYMENT STATUS: ${payStatus}</div><div class="deposit"><b>Keycard:</b> ${esc(b.keycardNo||'—')} &nbsp;
+ | &nbsp;
+ <b>Security:</b> ${esc(b.keycardSecurity||'—')} &nbsp;
+ | &nbsp;
+ <b>Refundable Deposit Received:</b> ${peso(b.keycardDeposit||0)}<br><small>The keycard deposit is separate from room charges and is refundable upon return of the keycard, subject to no damages.</small></div><div class="sign"><div>Guest Signature</div><div>Front Desk</div></div><button class="print" onclick="window.print()">Print Receipt</button></div></body></html>`);
+w.document.close()}
 function exportCSV(){let rows=[['PMS Reference','Booking Source','OTA Reference','Guest','Contact','Room','Type','Keycard Number','Keycard Security','Keycard Deposit','Keycard Return','Stay Type','Number of Nights','Number of Additional Hours','Check-in','Expected Check-out','Rate Per Night/Stay/Hour','Room Charge','Bath Towel Qty','Bedsheet Qty','Pillow Qty','Stain Fee','Additional Item Charges','Other Description','Manual Other Charge','Total','Paid','Balance','Payment Status','Initial Payment Method','Payment Reference','Reservation Payment Status','Booking Status'],...bookings.map(b=>[b.ref,b.source||'Walk-in',b.otaRef||'',b.guest,b.contact,b.room,b.type,b.keycardNo||'',b.keycardSecurity||'',b.keycardDeposit||0,b.keycardReturn||'',b.stay,b.nights||1,b.additionalHours||1,b.checkin,b.checkoutDate||'',b.unitRate??b.base,b.base,b.bathTowelQty||0,b.bedsheetQty||0,b.pillowQty||0,b.stainFee||0,b.itemCharges||0,b.chargeDesc||'',b.manualOther??b.other??0,b.total,b.paid,b.balance,b.balance<=0?'Fully Paid':b.paid>0?'Partially Paid':'Pending',b.method,b.paymentRef||'',b.status==='Reserved'?(b.balance<=0?'Fully Paid':b.paid>0?'Downpayment Received':'Pending Downpayment'):'Not Applicable',b.status])];let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='SD_Hotel_Bookings.csv';a.click()}
 
 const SUPABASE_URL='https://cspdeuryewgijmkrdajd.supabase.co',SUPABASE_PUBLISHABLE_KEY='sb_publishable_HIQ8dsbgZnrTzXVLhspn6w_CZHMVl8m',cloudClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);let cloudReady=false,cloudSaving=false,cloudSaveTimer=null,cloudUpdatedAt='';

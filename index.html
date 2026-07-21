@@ -135,7 +135,7 @@ select option[value="Full Payment"]{background:#fff4b8}select:has(option[value="
 </div>
 <div class="field">
 <label>VAT Treatment</label>
-<select id="vatTreatment"><option value="VAT">Add 12% VAT</option><option value="Exempt">VAT Exempt / No VAT</option></select>
+<select id="vatTreatment"><option value="Exempt">VAT Exempt / No VAT</option><option value="VAT">Add 12% VAT</option></select>
 <small>VAT is calculated automatically from the room charge.</small>
 </div>
 <div class="full summary" id="priceSummary">Room Rate: ₱0 • VAT (12%): ₱0 • Additional Items: ₱0 • Total: ₱0 • Balance: ₱0 • Pending</div>
@@ -412,7 +412,7 @@ nights.value=additionalHoursInput.value=1;
 bathTowelQty.value=bedsheetQty.value=pillowQty.value=other.value=paid.value=0;
 stainFeeInput.value=0;
 keycardDeposit.value=1000;
-vatTreatment.value='VAT';
+vatTreatment.value='Exempt';
 alert('Booking saved: '+ref+(bookingStatusInput.value==='Reserved'&&initialPaid>0?' — Downpayment received: '+peso(initialPaid):'')+'\nInventory was automatically updated.');
 document.querySelector('[data-page="bookings"]').click()};
 

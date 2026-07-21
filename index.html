@@ -373,7 +373,8 @@ d.setHours(12,0,0,0)}else d.setHours(d.getHours()+(stay.value==='3 Hours'?3:stay
 checkoutDate.value=new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}let multiplier=nightCount>1?' × '+nightCount+' nights':hourCount>1?' × '+hourCount+' hours':'';
 priceSummary.textContent=`Room Rate: ${peso(unitRate)}${multiplier} • VAT (12%): ${peso(vat)} • Additional Items/Stain: ${peso(otherTotal)} • Total: ${peso(total)} • Balance: ${peso(bal)} • ${paymentStatus}`;
 return{unitRate,base,vat,vatTreatment:vatTreatmentValue,nightCount,hourCount,stainFee,items,otherTotal,total,bal,paymentStatus}}
-['room','stay','nights','additionalHours','checkin','rateOverride','bathTowelQty','bedsheetQty','pillowQty','stainFee','other','paid','vatTreatment'].forEach(id=>document.getElementById(id).addEventListener('input',calc));
+function recalculateBookingTotal(){let updated=calc();if(initialPaymentTypeInput.value==='Full Payment'){paid.value=updated.total;calc()}else syncInitialPaymentType()}
+['room','stay','nights','additionalHours','checkin','rateOverride','bathTowelQty','bedsheetQty','pillowQty','stainFee','other','vatTreatment'].forEach(id=>{let control=document.getElementById(id);control.addEventListener('input',recalculateBookingTotal);control.addEventListener('change',recalculateBookingTotal)});paid.addEventListener('input',calc);
 ['stay','nights','additionalHours','checkin'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{setRoomOptions();setStayOptions();calc()}));
 stay.addEventListener('change',calc);room.addEventListener('change',()=>{applyRoomSelectColor();setStayOptions();calc()});
 source.addEventListener('change',()=>{if(source.value==='Agoda')method.value='Agoda Collect';if(source.value==='Booking.com')method.value='Booking.com Collect'});

@@ -26,7 +26,7 @@ select option[value="Full Payment"]{background:#fff4b8}select:has(option[value="
 <section id="booking" class="page">
 <h2>New Booking</h2>
 <div class="panel">
-<form id="bookingForm">
+<form id="bookingForm" novalidate>
 <div class="field">
 <label>Guest Name *</label>
 <input id="guest" required>
@@ -450,7 +450,7 @@ document.getElementById('saveBookingButton').addEventListener('click',()=>{
 const saveMessage=document.getElementById('bookingSaveMessage');
 saveMessage.style.display='none';
 recalculateBookingTotal();
-bookingForm.requestSubmit();
+bookingForm.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
 });
 
 function extendStay(i){let b=bookings[i];

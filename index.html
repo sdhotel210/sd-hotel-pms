@@ -705,4 +705,22 @@ const calendarNavButton=document.querySelector('#nav button[data-page="calendar"
 if(calendarNavButton)calendarNavButton.addEventListener('click',()=>setTimeout(renderCalendar,0),true);
 setInterval(()=>clock.textContent=new Date().toLocaleString('en-PH'),1000);window.addEventListener('resize',()=>{drawSalesGraph();if(document.getElementById('revenueReports').classList.contains('active'))drawRevenueCanvas()});checkin.value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);updateExpectedCheckout();render();updateDashboardMetrics();setTimeout(drawSalesGraph);startOnlinePMS();['method','paymentMethod','arrivalPaymentMethod','bookingPaymentMethod'].forEach(id=>applySelectHighlight(document.getElementById(id),paymentMethodColor));applySelectHighlight(initialPaymentTypeInput,paymentTypeColor);applySelectHighlight(bookingPaymentType,paymentTypeColor);[paid,bookingStatusInput,stay,room].forEach(control=>control.addEventListener(control===paid?'input':'change',()=>{initialPaymentTypeInput.style.backgroundColor=paymentTypeColor(initialPaymentTypeInput.value)}));document.querySelector('[data-page="booking"]').addEventListener('click',()=>{if(!checkin.value)checkin.value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);updateExpectedCheckout()});
 ['checkin','stay','nights','additionalHours'].forEach(id=>{const control=document.getElementById(id);if(control){control.addEventListener('input',updateExpectedCheckout);control.addEventListener('change',updateExpectedCheckout)}});updateExpectedCheckout();window.addEventListener('online',()=>{setSyncStatus('connecting');pullCloudState(false)});window.addEventListener('offline',()=>setSyncStatus('offline'));
+</script>
+<script>
+/* Login safety: keyboard Enter never submits staff credentials. */
+(function protectStaffLoginFromEnter(){
+  const form=document.getElementById('loginForm');
+  if(!form)return;
+  const openButton=[...form.querySelectorAll('button')].find(button=>button.textContent.trim()==='Open PMS');
+  if(openButton){
+    openButton.type='button';
+    openButton.addEventListener('click',()=>form.requestSubmit());
+  }
+  form.addEventListener('keydown',event=>{
+    if(event.key==='Enter'){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  },true);
+})();
 </script></body></html>

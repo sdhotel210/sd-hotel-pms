@@ -145,7 +145,7 @@ select option[value="Full Payment"]{background:#fff4b8}select:has(option[value="
 </div>
 <div class="full summary" id="priceSummary">Room Rate: ₱0 • VAT (12%): ₱0 • Additional Items: ₱0 • Total: ₱0 • Balance: ₱0 • Pending</div>
 <div class="full">
-<button class="primary" id="saveBookingButton" type="submit">Save Booking</button>
+<button class="primary" id="saveBookingButton" type="button">Save Booking</button>
 <div id="bookingSaveMessage" role="alert" aria-live="assertive" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;font-weight:700"></div>
 </div>
 </form>
@@ -442,7 +442,16 @@ keycardDeposit.value=1000;
 vatTreatment.value='Exempt';
 alert((createdRefs.length>1?`${createdRefs.length} linked room bookings saved under ${groupRef}`:'Booking saved: '+createdRefs[0])+(bookingStatusInput.value==='Reserved'&&initialPaid>0?' — Payment received: '+peso(initialPaid):'')+'\nInventory was automatically updated.');
 document.querySelector('[data-page="bookings"]').click()
+}catch(error){
+console.error('Save Booking failed:',error);
+showSaveProblem('Booking was not saved: '+(error&&error.message?error.message:'Unexpected system error. Please refresh and try again.'));
 }finally{bookingSubmitInProgress=false;if(submitButton)submitButton.disabled=false}};
+document.getElementById('saveBookingButton').addEventListener('click',()=>{
+const saveMessage=document.getElementById('bookingSaveMessage');
+saveMessage.style.display='none';
+recalculateBookingTotal();
+bookingForm.requestSubmit();
+});
 
 function extendStay(i){let b=bookings[i];
 if(!b||b.status!=='Checked-in'){alert('Only checked-in guests can extend their stay.');

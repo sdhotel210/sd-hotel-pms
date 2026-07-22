@@ -145,7 +145,8 @@ select option[value="Full Payment"]{background:#fff4b8}select:has(option[value="
 </div>
 <div class="full summary" id="priceSummary">Room Rate: ₱0 • VAT (12%): ₱0 • Additional Items: ₱0 • Total: ₱0 • Balance: ₱0 • Pending</div>
 <div class="full">
-<button class="primary">Save Booking</button>
+<button class="primary" id="saveBookingButton" type="submit">Save Booking</button>
+<div id="bookingSaveMessage" role="alert" aria-live="assertive" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;font-weight:700"></div>
 </div>
 </form>
 </div>
@@ -411,8 +412,15 @@ if(bookingSubmitInProgress)return;
 bookingSubmitInProgress=true;
 const submitButton=bookingForm.querySelector('button[type="submit"],button:not([type])');
 if(submitButton)submitButton.disabled=true;
+const saveMessage=document.getElementById('bookingSaveMessage');
+const showSaveProblem=(message,field)=>{saveMessage.textContent=message;saveMessage.style.display='block';saveMessage.style.background='#ffe2e2';saveMessage.style.color='#8b1d1d';saveMessage.scrollIntoView({behavior:'smooth',block:'center'});if(field)field.focus();alert(message)};
 try{
-if(['Agoda','Booking.com'].includes(source.value)&&otaRef.value.trim()&&bookings.some(b=>b.source===source.value&&String(b.otaRef||'').trim().toLowerCase()===otaRef.value.trim().toLowerCase()&&b.status!=='Cancelled')){alert(`This ${source.value} confirmation number already exists. Open the existing booking instead of saving it again.`);otaRef.focus();return}
+saveMessage.style.display='none';
+if(!guest.value.trim()){showSaveProblem('Please enter the guest name.',guest);return}
+if(!checkin.value||Number.isNaN(new Date(checkin.value).getTime())){showSaveProblem('Please select a valid check-in date and time.',checkin);return}
+if(['Agoda','Booking.com'].includes(source.value)&&!otaRef.value.trim()){showSaveProblem(`Please enter the ${source.value} confirmation number.`,otaRef);return}
+let duplicateIndex=['Agoda','Booking.com'].includes(source.value)&&otaRef.value.trim()?bookings.findIndex(b=>b.source===source.value&&String(b.otaRef||'').trim().toLowerCase()===otaRef.value.trim().toLowerCase()&&b.status!=='Cancelled'):-1;
+if(duplicateIndex>=0){let existing=bookings[duplicateIndex];showSaveProblem(`This ${source.value} confirmation number is already saved for ${existing.guest||'a guest'} (${existing.ref}). Please open the existing booking; it was not erased or duplicated.`,otaRef);return}
 let selectedValues=selectedGroupRoomValues(),requestedCount=Math.max(1,+groupRoomCount.value||1);if(selectedValues.length!==requestedCount){alert(`Please select all ${requestedCount} rooms for this group booking.`);return}if(new Set(selectedValues).size!==selectedValues.length){alert('Each room may only be selected once.');return}let selectedRooms=selectedValues.map(value=>rooms.find(x=>x.number===value)||null),reservedTypes=selectedValues.map((value,index)=>selectedRooms[index]?.type||(value.startsWith('UNASSIGNED:')?value.split(':')[1]:''));
 if(bookingStatusInput.value==='Checked-in'&&selectedRooms.some(r=>!r)){alert('Please assign every room before checking in the guest.');
 return}let c=calc();if(source.value==='Agoda'&&c.agodaAmount<=0){alert('Please enter the Agoda Booking Amount shown in Agoda.');agodaBookingAmount.focus();return}let autoReserved=bookingStatusInput.value==='Checked-in'&&c.bal>0;
@@ -423,6 +431,7 @@ let initialPaymentType=initialPaid<=0?'No Payment':initialPaid>=c.total?'Full Pa
 if(!deductBookingInventory(groupRef,guest.value,selectedRooms.map(r=>r?.number||'Unassigned').join(', ')))return;
 let paymentRemaining=initialPaid,createdRefs=[];c.roomBases.forEach((roomCost,index)=>{let r=selectedRooms[index],roomVat=c.vatTreatment==='VAT'?Math.round(roomCost.base*.12*100)/100:0,extras=index===0?c.otherTotal:0,bookingTotal=roomCost.base+roomVat+extras,isLast=index===c.roomBases.length-1,bookingPaid=isLast?paymentRemaining:Math.min(paymentRemaining,bookingTotal);paymentRemaining-=bookingPaid;let bookingBalance=Math.max(0,bookingTotal-bookingPaid),bookingCredit=Math.max(0,bookingPaid-bookingTotal),ref=groupRef+'-'+(index+1),bookingPaymentStatus=bookingBalance<=0?'Fully Paid':otaCollectArrival?'OTA Collect Pending':bookingPaid>0?'Partially Paid':'Pending';createdRefs.push(ref);bookings.unshift({ref,groupRef,groupRoomNumber:index+1,groupRoomCount:selectedValues.length,source:source.value,otaRef:otaRef.value,otaBookingAmount:index===0?(c.agodaAmount||0):0,guest:guest.value,contact:contact.value,room:r?r.number:'Unassigned',type:r?r.type:reservedTypes[index],keycardNo:index===0?keycardNo.value:'',keycardSecurity:keycardSecurity.value,keycardDeposit:+keycardDeposit.value||0,keycardReturn:'Issued',stay:stay.value,nights:c.nightCount,additionalHours:c.hourCount,checkin:checkin.value,checkoutDate:checkoutDate.value,unitRate:roomCost.unitRate,base:roomCost.base,vat:roomVat,vatTreatment:c.vatTreatment,bathTowelQty:index===0?+bathTowelQty.value||0:0,bedsheetQty:index===0?+bedsheetQty.value||0:0,pillowQty:index===0?+pillowQty.value||0:0,stainFee:index===0?c.stainFee:0,itemCharges:index===0?c.items:0,chargeDesc:index===0?chargeDesc.value:'',manualOther:index===0?+other.value||0:0,other:extras,total:bookingTotal,paid:bookingPaid,balance:bookingBalance,credit:bookingCredit,paymentStatus:bookingPaymentStatus,reservationPaymentStatus:bookingStatusInput.value==='Reserved'?(bookingBalance<=0?'Fully Paid':bookingPaid>0?'Downpayment Received':'Pending Downpayment'):otaCollectArrival?'OTA Collect Pending':'Not Applicable',method:method.value,paymentRef:paymentRef.value,initialPaymentType:bookingPaid<=0?'No Payment':bookingBalance<=0?'Full Payment':'Downpayment',paymentHistory:bookingPaid?[{date:now.toISOString(),amount:bookingPaid,paymentType:initialPaymentType,method:method.value,reference:paymentRef.value,balance:bookingBalance,credit:bookingCredit}]:[],status:bookingStatusInput.value,created:now.toISOString(),syncUpdatedAt:now.toISOString()});if(bookingStatusInput.value==='Checked-in'&&r)r.status='Occupied'});
 save();
+saveMessage.textContent='Booking saved successfully.';saveMessage.style.display='block';saveMessage.style.background='#dff4e5';saveMessage.style.color='#22623a';
 bookingForm.reset();
 agodaBookingAmount.value='';updateOtaAmountField();
 groupRoomCount.value=1;refreshGroupRoomSelectors();

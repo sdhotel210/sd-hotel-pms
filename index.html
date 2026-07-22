@@ -453,21 +453,17 @@ if(conflict){alert(`Cannot extend Room ${b.room}. It conflicts with ${conflict.g
 return}let rate=+rates[b.type]?.[extensionType]||0;
 if(!rate){alert(`${extensionType} extension is not available for ${b.type}.`);
 return}let charge=rate*quantity,vatCharge=b.vatTreatment==='Exempt'?0:Math.round(charge*.12*100)/100,description=extensionType==='Per Night'?`${quantity} night${quantity>1?'s':''}`:extensionType==='Additional Hour'?`${quantity} hour${quantity>1?'s':''}`:`${quantity} × ${extensionType}`;
-if(!confirm(`Extend ${b.guest} by ${description}?\n\nRate: ${peso(rate)}\nVAT (12%): ${peso(vatCharge)}\nAdditional total: ${peso(charge+vatCharge)}\nNew checkout: ${newCheckout.toLocaleString('en-PH')}\n\nThe charge will be added to the remaining balance.`))return;
-if(extensionType==='Per Night')b.nights=(+b.nights||1)+quantity;
-else b.additionalHours=(+b.additionalHours||0)+hours;
-b.base=(+b.base||0)+charge;
-b.vat=(+b.vat||0)+vatCharge;
-b.total=(+b.total||0)+charge+vatCharge;
-b.balance=Math.max(0,b.total-(+b.paid||0));
-b.paymentStatus=b.balance<=0?'Fully Paid':b.paid>0?'Partially Paid':'Pending';
-b.checkoutDate=new Date(newCheckout-newCheckout.getTimezoneOffset()*60000).toISOString().slice(0,16);
+if(!confirm(`Create a separate extension booking for ${b.guest}?\n\nExtension: ${description}\nRate: ${peso(rate)}\nVAT (12%): ${peso(vatCharge)}\nNew booking total: ${peso(charge+vatCharge)}\nExtension starts: ${oldCheckout.toLocaleString('en-PH')}\nNew checkout: ${newCheckout.toLocaleString('en-PH')}\n\nThe original booking and extension charges will remain separate.`))return;
+let now=new Date(),rootRef=b.originalBookingRef||b.extensionOf||b.ref,extensionRef='EXT-'+now.getFullYear().toString().slice(-2)+(now.getMonth()+1).toString().padStart(2,'0')+'-'+String(Date.now()).slice(-6),extensionCheckout=new Date(newCheckout-newCheckout.getTimezoneOffset()*60000).toISOString().slice(0,16),extensionCheckin=new Date(oldCheckout-oldCheckout.getTimezoneOffset()*60000).toISOString().slice(0,16),extensionTotal=charge+vatCharge;
+let extensionBooking={...b,ref:extensionRef,groupRef:extensionRef,groupRoomNumber:1,groupRoomCount:1,source:'Extend Stay',otaRef:'',otaBookingAmount:0,extensionOf:b.ref,originalBookingRef:rootRef,isExtension:true,keycardDeposit:0,keycardReturn:'Retained',stay:extensionType,nights:extensionType==='Per Night'?quantity:1,additionalHours:extensionType==='Additional Hour'?quantity:hours,checkin:extensionCheckin,checkoutDate:extensionCheckout,unitRate:rate,base:charge,vat:vatCharge,bathTowelQty:0,bedsheetQty:0,pillowQty:0,stainFee:0,itemCharges:0,chargeDesc:`Extension of ${b.ref}`,manualOther:0,other:0,total:extensionTotal,paid:0,balance:extensionTotal,paymentStatus:'Pending',reservationPaymentStatus:'Not Applicable',method:'Cash',paymentRef:'',initialPaymentType:'No Payment',paymentHistory:[],paymentCorrections:[],status:'Checked-in',created:now.toISOString(),syncUpdatedAt:now.toISOString(),extensionHistory:[]};
+b.status='Checked-out';b.keycardReturn='Retained for Extension';b.extendedTo=extensionRef;b.statusUpdatedAt=now.toISOString();b.syncUpdatedAt=now.toISOString();
 b.extensionHistory=b.extensionHistory||[];
-b.extensionHistory.push({date:new Date().toISOString(),type:extensionType,quantity,hours,rate,charge,vat:vatCharge,checkoutDate:b.checkoutDate});
+b.extensionHistory.push({date:now.toISOString(),extensionRef,type:extensionType,quantity,hours,rate,charge,vat:vatCharge,checkin:extensionCheckin,checkoutDate:extensionCheckout});
+bookings.unshift(extensionBooking);
 save();
 render();
 updateDashboardMetrics();
-alert(`Stay extended successfully.\nExtension: ${description}\nNew checkout: ${newCheckout.toLocaleString('en-PH')}\nRoom charge: ${peso(charge)}\nVAT (12%): ${peso(vatCharge)}\nRemaining balance: ${peso(b.balance)}\n\nUse Add Payment to record the extension payment.`)}
+alert(`Separate extension booking created successfully.\n\nNew reference: ${extensionRef}\nExtension of: ${b.ref}\nNew checkout: ${newCheckout.toLocaleString('en-PH')}\nExtension total: ${peso(extensionTotal)}\nExtension balance: ${peso(extensionTotal)}\n\nUse Add Payment on the new extension record.`)}
 function render(){
 try{
 setRoomOptions();
@@ -486,7 +482,7 @@ bookings.forEach(b=>counts[b.status]=(counts[b.status]||0)+1);
 statusSummary.innerHTML=Object.entries(counts).map(([k,v])=>`<tr><td>${k}</td><td><b>${v}</b></td></tr>`).join('');
 }catch(error){console.error('Non-booking section could not be refreshed:',error);updateExpectedCheckout()}
 bookingRows.innerHTML=bookings.map((b,i)=>{let extras=[b.bathTowelQty?`Towel ×${b.bathTowelQty}`:'',b.bedsheetQty?`Bedsheet ×${b.bedsheetQty}`:'',b.pillowQty?`Pillow ×${b.pillowQty}`:'',b.stainFee?`Stain ${peso(b.stainFee)}`:''].filter(Boolean).join(', ')||'—',stayLabel=b.stay==='Per Night'&&b.nights>1?`${b.nights} Nights`:b.stay,payStatus=b.balance<=0?'Fully Paid':b.paid>0?'Partially Paid':'Pending',reservationType=b.paid<=0?'No Payment':b.paid>=b.total?'Full Payment':'Downpayment',displayStatus=b.status==='Reserved'?(b.balance<=0?'Reserved – Fully Paid':b.paid>0?'Reserved – Downpayment Received':'Reserved – Pending Downpayment'):b.status;
-return `<tr><td>${b.ref}</td>
+return `<tr><td>${b.ref}${b.extensionOf?`<br><small><b>Extension of:</b> ${b.extensionOf}</small>`:b.extendedTo?`<br><small><b>Extended to:</b> ${b.extendedTo}</small>`:''}</td>
 <td><span class="badge">${b.source||'Walk-in'}</span></td>
 <td>${b.otaRef||'—'}</td>
 <td>${b.guest}</td>
@@ -505,7 +501,7 @@ return `<tr><td>${b.ref}</td>
 <td><span class="badge">${reservationType}</span></td>
 <td><span class="badge">${payStatus}</span></td>
 <td><span class="badge">${displayStatus}</span></td>
-<td>${canVoidPayments()?`<button class="primary" onclick="correctBookingPayment(${i})">Edit Amount</button> ${b.paymentHistory?.some(x=>!x.voided&&!x.correction&&(+x.amount||0)>0)?`<button class="danger" onclick="voidLatestPayment(${i})">Void Payment</button> `:''}`:''}${b.balance>0?`<button class="primary" onclick="openBookingPayment(${i},false)">Add Payment</button> `:''}${b.status==='Reserved'?`<button class="primary" onclick="openBookingPayment(${i},true)">${b.balance>0?'Pay Balance & Check In':'Check In'}</button> <button class="danger" onclick="cancelBooking(${i})">Cancel</button>`:''}${b.status==='Checked-in'?`${b.stay==='Per Night'?`<button class="primary" onclick="extendStay(${i})">Extend Stay</button> `:''}<button class="danger" onclick="checkout(${i})">Check Out</button>`:''}</td>
+<td>${canVoidPayments()?`<button class="primary" onclick="correctBookingPayment(${i})">Edit Amount</button> ${b.paymentHistory?.some(x=>!x.voided&&!x.correction&&(+x.amount||0)>0)?`<button class="danger" onclick="voidLatestPayment(${i})">Void Payment</button> `:''}`:''}${b.balance>0?`<button class="primary" onclick="openBookingPayment(${i},false)">Add Payment</button> `:''}${b.status==='Reserved'?`<button class="primary" onclick="openBookingPayment(${i},true)">${b.balance>0?'Pay Balance & Check In':'Check In'}</button> <button class="danger" onclick="cancelBooking(${i})">Cancel</button>`:''}${b.status==='Checked-in'?`<button class="primary" onclick="extendStay(${i})">Extend Stay</button> <button class="danger" onclick="checkout(${i})">Check Out</button>`:''}</td>
 </tr>`}).join('')||'<tr><td colspan="20">No bookings yet.</td></tr>';
 roomCards.innerHTML=rooms.map((r,i)=>`<div class="card room" ${r.type==='Office'?'':`onclick="cycleRoom(${i})"`}><strong>${r.number}</strong><small>${r.type}</small><p><span class="badge ${r.status}">${r.status}</span></p></div>`).join('');
 let transactions=[];

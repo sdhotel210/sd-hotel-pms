@@ -20,6 +20,7 @@ select option[value="Full Payment"]{background:#fff4b8}select:has(option[value="
 #bookings .panel>table th:last-child{background:#e8dcc4;z-index:5}
 #bookings .panel>table td:last-child{background:#fff}
 #bookings .panel>table td:last-child button{margin:3px;pointer-events:auto}
+#bookings .booking-date-divider td{background:#f7f0df;color:#6a522e;border-top:2px solid #c8ab70;border-bottom:1px solid #dccaa7;padding:10px 12px;font-size:14px}
 @media(max-width:700px){#bookings .panel>table th:last-child,#bookings .panel>table td:last-child{min-width:190px}}
 </style>
 <section id="dashboard" class="page active"><div class="panel welcome"><img class="welcome-logo" data-logo alt="SD Hotel logo"><div><h2 style="margin-bottom:5px">Welcome to SD Hotel PMS</h2><div>Manage reservations, rooms, payments, keycards, and reports in one place.</div></div></div><h2>Dashboard</h2><div class="cards"><div class="card">Total Revenue Today<div class="metric" id="todayRevenue">₱0</div></div><div class="card">Monthly Revenue<div class="metric" id="monthlyRevenue">₱0</div></div><div class="card">Number of Guests<div class="metric" id="guestCount">0</div></div><div class="card">Occupancy Rate<div class="metric" id="occupancyMetric">0%</div></div><div class="card">Active Bookings<div class="metric" id="activeCount">0</div></div><div class="card">Available Rooms<div class="metric" id="availableCount">0</div></div><div class="card">Remaining Guest Balances<div class="metric" id="balanceTotal">₱0</div></div><div class="card">Monthly Expenses<div class="metric" id="monthlyExpenses">₱0</div></div></div><div class="panel sales-chart"><b>Hotel Sales — Last 7 Days</b><canvas id="salesCanvas"></canvas><div class="chart-note">Based on payments recorded in the PMS.</div></div><div class="grid2"><div class="panel"><b>Room Occupancy</b><div class="donut" id="occupancyDonut" style="--p:0%" data-label="0%"></div></div><div class="panel"><b>Booking Status</b><table><tbody id="statusSummary"></tbody></table></div></div></section>
@@ -178,6 +179,7 @@ select option[value="Full Payment"]{background:#fff4b8}select:has(option[value="
 <table>
 <thead>
 <tr>
+<th>Booking Date</th>
 <th>PMS Reference</th>
 <th>Source</th>
 <th>OTA Reference</th>
@@ -511,8 +513,10 @@ let counts={Reserved:0,'Checked-in':0,'Checked-out':0,Cancelled:0};
 bookings.forEach(b=>counts[b.status]=(counts[b.status]||0)+1);
 statusSummary.innerHTML=Object.entries(counts).map(([k,v])=>`<tr><td>${k}</td><td><b>${v}</b></td></tr>`).join('');
 }catch(error){console.error('Non-booking section could not be refreshed:',error);updateExpectedCheckout()}
-bookingRows.innerHTML=bookings.map((b,i)=>{let extras=[b.bathTowelQty?`Towel ×${b.bathTowelQty}`:'',b.bedsheetQty?`Bedsheet ×${b.bedsheetQty}`:'',b.pillowQty?`Pillow ×${b.pillowQty}`:'',b.stainFee?`Stain ${peso(b.stainFee)}`:''].filter(Boolean).join(', ')||'—',stayLabel=b.stay==='Per Night'&&b.nights>1?`${b.nights} Nights`:b.stay,payStatus=b.balance<=0?'Fully Paid':b.paid>0?'Partially Paid':'Pending',reservationType=b.paid<=0?'No Payment':b.paid>=b.total?'Full Payment':'Downpayment',displayStatus=b.status==='Reserved'?(b.balance<=0?'Reserved – Fully Paid':b.paid>0?'Reserved – Downpayment Received':'Reserved – Pending Downpayment'):b.status;
-return `<tr><td>${b.ref}${b.extensionOf?`<br><small><b>Extension of:</b> ${b.extensionOf}</small>`:b.extendedTo?`<br><small><b>Extended to:</b> ${b.extendedTo}</small>`:''}</td>
+let lastBookingDay='';
+bookingRows.innerHTML=bookings.map((b,i)=>{let extras=[b.bathTowelQty?`Towel ×${b.bathTowelQty}`:'',b.bedsheetQty?`Bedsheet ×${b.bedsheetQty}`:'',b.pillowQty?`Pillow ×${b.pillowQty}`:'',b.stainFee?`Stain ${peso(b.stainFee)}`:''].filter(Boolean).join(', ')||'—',stayLabel=b.stay==='Per Night'&&b.nights>1?`${b.nights} Nights`:b.stay,payStatus=b.balance<=0?'Fully Paid':b.paid>0?'Partially Paid':'Pending',reservationType=b.paid<=0?'No Payment':b.paid>=b.total?'Full Payment':'Downpayment',displayStatus=b.status==='Reserved'?(b.balance<=0?'Reserved – Fully Paid':b.paid>0?'Reserved – Downpayment Received':'Reserved – Pending Downpayment'):b.status,createdDate=new Date(b.created||b.checkin),validCreated=!Number.isNaN(createdDate.getTime()),bookingDay=validCreated?createdDate.toDateString():'Date unavailable',isToday=validCreated&&bookingDay===new Date().toDateString(),dateLabel=validCreated?createdDate.toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'}):'Date unavailable',dateTimeLabel=validCreated?createdDate.toLocaleString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'—',divider=bookingDay!==lastBookingDay?`<tr class="booking-date-divider"><td colspan="21"><b>${isToday?'Today — ':''}${dateLabel}</b></td></tr>`:'';
+lastBookingDay=bookingDay;
+return `${divider}<tr><td><b>${isToday?'Today':dateTimeLabel}</b>${isToday?`<br><small>${dateTimeLabel}</small>`:''}</td><td>${b.ref}${b.extensionOf?`<br><small><b>Extension of:</b> ${b.extensionOf}</small>`:b.extendedTo?`<br><small><b>Extended to:</b> ${b.extendedTo}</small>`:''}</td>
 <td><span class="badge">${b.source||'Walk-in'}</span></td>
 <td>${b.otaRef||'—'}</td>
 <td>${b.guest}</td>
@@ -532,7 +536,7 @@ return `<tr><td>${b.ref}${b.extensionOf?`<br><small><b>Extension of:</b> ${b.ext
 <td><span class="badge">${payStatus}</span></td>
 <td><span class="badge">${displayStatus}</span></td>
 <td>${canVoidPayments()?`<button class="primary" onclick="correctBookingPayment(${i})">Edit Amount</button> ${b.paymentHistory?.some(x=>!x.voided&&!x.correction&&(+x.amount||0)>0)?`<button class="danger" onclick="voidLatestPayment(${i})">Void Payment</button> `:''}`:''}${b.balance>0?`<button class="primary" onclick="openBookingPayment(${i},false)">Add Payment</button> `:''}${b.status==='Reserved'?`<button class="primary" onclick="openBookingPayment(${i},true)">${b.balance>0?'Pay Balance & Check In':'Check In'}</button> <button class="danger" onclick="cancelBooking(${i})">Cancel</button>`:''}${b.status==='Checked-in'?`<button class="primary" onclick="extendStay(${i})">Extend Stay</button> <button class="danger" onclick="checkout(${i})">Check Out</button>`:''}</td>
-</tr>`}).join('')||'<tr><td colspan="20">No bookings yet.</td></tr>';
+</tr>`}).join('')||'<tr><td colspan="21">No bookings yet.</td></tr>';
 roomCards.innerHTML=rooms.map((r,i)=>`<div class="card room" ${r.type==='Office'?'':`onclick="cycleRoom(${i})"`}><strong>${r.number}</strong><small>${r.type}</small><p><span class="badge ${r.status}">${r.status}</span></p></div>`).join('');
 let transactions=[];
 bookings.forEach(b=>{let history=b.paymentHistory?.length?b.paymentHistory:(b.paid?[{date:b.created,amount:b.paid,method:b.method,reference:b.paymentRef||'',balance:b.balance}]:[]);

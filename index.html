@@ -692,7 +692,7 @@ cloudLoginForm.style.display='block';
 const FRESH_START_VERSION='disabled',DATA_CLEANUP_VERSION='disabled';
 // Exact booking references requested for removal. Permanent tombstones stop a
 // stale phone or browser copy from restoring these deleted guest records.
-const TARGETED_REMOVED_BOOKING_REFS=['GRP-2607-07573-1','GRP-2607-50204-1','GRP-2607-71421-1','GRP-2607-39702-1','GRP-2607-14479-1','GRP-2607-81438-1','GRP-2607-58960-1','GRP-2607-11560-1','GRP-2607-80562-1','GRP-2607-84045-1','GRP-2607-56764-1'];
+const TARGETED_REMOVED_BOOKING_REFS=['GRP-2607-07573-1','GRP-2607-50204-1','GRP-2607-71421-1','GRP-2607-39702-1','GRP-2607-14479-1','GRP-2607-81438-1','GRP-2607-58960-1','GRP-2607-11560-1','GRP-2607-80562-1','GRP-2607-84045-1','GRP-2607-56764-1','GRP-2607-53778-1'];
 let removedBookingRefs=[...new Set([...JSON.parse(localStorage.getItem(CLEAN_STORAGE+'RemovedBookingRefs')||'[]'),...TARGETED_REMOVED_BOOKING_REFS])];
 function removeDeletedBookings(list){let removed=new Set(removedBookingRefs);return (list||[]).filter(b=>b&&b.ref&&!removed.has(b.ref))}
 function cloudState(){return{freshStartVersion:FRESH_START_VERSION,dataCleanupVersion:DATA_CLEANUP_VERSION,removedBookingRefs,rooms,bookings:removeDeletedBookings(bookings),inventory,inventoryPrices,inventoryTransactions,expenses,staffAccounts,cleaningLogs}}
